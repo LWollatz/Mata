@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>MEDDATA</title>
+
 
 <!--style-->
 <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
@@ -47,6 +47,13 @@ if( $stmt === false )
      die( print_r( sqlsrv_errors(), true));  
 }
 ?>
+
+<!--metadata-->
+<title>Tag <?php echo $tagvalue; ?> | MEDDATA</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="http://meddata.clients.soton.ac.uk/favicon.ico">
+
 
 <!--javascript-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>

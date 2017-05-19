@@ -53,6 +53,9 @@ $relpath = str_replace("\\", "/", $relpath);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta charset="utf-8">
 <title>Edit <?php echo $row['Name']; ?> | MEDDATA</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="http://meddata.clients.soton.ac.uk/favicon.ico">
 
 <!--style-->
 <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">

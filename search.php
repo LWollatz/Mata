@@ -1,6 +1,10 @@
 <html>
 <head>
-<title>MEDDATA</title>
+<!--metadata-->
+<title>Searchresults | MEDDATA</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="http://meddata.clients.soton.ac.uk/favicon.ico">
 
 <!--style-->
 <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">

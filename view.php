@@ -73,6 +73,9 @@ $relpath = str_replace("\\", "/", $relpath);
 <meta name="description" content="multi-resolution, tile-based 3D CT image viewer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php echo $row['Name']; ?> | MEDDATA</title>
+<link rel="icon" 
+      type="image/ico" 
+      href="http://meddata.clients.soton.ac.uk/favicon.ico">
 
 <!--style-->
 <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
