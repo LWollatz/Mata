@@ -1,0 +1,376 @@
+@charset 'UTF-8';
+body{
+	height: 100%; 
+	margin: 0pt; 
+	background-color: #000;
+	color: white;
+}
+
+a{
+	border: 0px;
+	border-color: #000;
+	color: #ffffff;
+	text-decoration: none;
+}
+a:hover{
+	border: 0px;
+	border-color: #000;
+	color: #ffffff;
+	text-decoration: none;
+	font-size: 110%;
+}
+a:visited{
+	border: 0px;
+	border-color: #000;
+	color: #ffffff;
+	text-decoration: none;
+}
+
+div#outerDiv{
+	position: relative;
+	overflow: hidden;
+	height: 100%; 
+	width: 100%; 
+	border: 1px solid black;
+	cursor: move;
+}
+
+div#outerDiv0 {
+	position: absolute;
+	overflow: hidden;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+
+.nofa{
+	/*set this to "block" if not using font-awesome*/
+	display: none;
+}
+
+div#outerDiv{
+	position: relative;
+	overflow: hidden;
+	height: 100%; 
+	width: 100%; 
+	border: 1px solid black;
+}
+
+div#outerDiv0 {
+	position: absolute;
+	overflow: hidden;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+/*toolbox*/
+div#overlay {
+	position: absolute;
+	z-index: 100;
+	height: 100%;
+	padding-top: 0;
+	background-color: #ffffff;
+	background-color: rgba(255, 255, 255, 0.5);
+	border-width: 0px;
+	border-color: #266c8e;
+	color: #000;
+	font-size: 16px;
+	font-family: sans-serif;
+	text-shadow: none;
+	text-align: left;
+}
+
+/*slider*/
+/*slider colour*/
+.slider.active {
+	color: #369aca;
+	background-color: #369aca;
+}
+.slider.active2 {
+	color: #266c8e;
+	background-color: #266c8e;
+}
+.slider.inactive {
+	color: #d4d4d4;
+	background-color: #d4d4d4;
+}
+.slider.knob {
+	color: #000000;
+	background-color: #000000;
+}
+.slider.active:hover {
+	opacity: 0.6;
+	cursor: pointer;
+}
+.slider.active2:hover {
+	opacity: 0.6;
+	cursor: pointer;
+}
+.slider.inactive:hover {
+	opacity: 0.6;
+	cursor: pointer;
+}
+/*slider icons*/
+div.icon{
+	position: absolute;
+	z-index: 102;
+}
+div.icon img{
+	width: 20px;
+	border-width: 0px;
+}
+div.icon img:hover{
+	width: 22px;
+	border-width: 0px;
+	line-height: 20px;
+	cursor: pointer;
+}
+div.icon span{
+	width: 20px;
+	border-width: 0px;
+	color: #266c8e;
+}
+div.icon span:hover{
+	border-width: 0px;
+	font-size: 110%;
+	line-height: 20px;
+	cursor: pointer;
+}
+div.icon.left{
+	left: 10px;
+}
+div.icon.right{
+	left: 190px;
+}
+div.icon.zoom{
+	top: 15px;
+}
+div.icon.slices{
+	top: 45px;
+}
+/*slider positioning*/
+div.slider{
+	position: absolute;
+	z-index: 101;
+	left: 15px;
+	height: 10px;
+	width: 190px;
+}
+div.slider.zoom{
+	top: 20px;
+}
+div.slider.slices{
+	top: 50px;
+}
+/*slider tables*/
+#thresslidertable{
+	table-layout: fixed;
+	height: 2px;
+	min-height: 10px;
+	border: 0px;
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+}
+#zoomslidertable{
+	table-layout: fixed;
+	height: 2px;
+	min-height: 10px;
+	min-width: 0px;
+	border: 0px;
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+}
+#sliceslidertable{
+	table-layout: fixed;
+	height: 2px;
+	min-height: 10px;
+	min-width: 0px;
+	border: 0px;
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+}
+
+/*radio buttons*/
+.optionbtnlbl input{
+	position: relative;
+	left: 0px;
+	height: 15px;
+	width: 15px;
+	line-height: 20px;
+}
+.optionbtnlbl{
+	position: relative;
+	left: 30px;
+	height: 20px;
+	width: 150px;
+	background-color: #266c8e;
+	margin-bottom: 2px;
+	color: #ffffff;
+	text-align: left;
+	line-height: 20px;
+}
+.optionbtnlbl:hover{
+	font-size: 110%;
+	line-height: 20px;
+	cursor: pointer;
+}
+
+
+/*ruler*/
+.ruler {
+	display: block;
+	z-index: 200;
+	height: 0px;
+	border: 1px solid #369aca;
+}
+.rulerlbl{
+	color: white;
+	text-align: center;
+	text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+#sleepRuler{
+	position: absolute;
+	left: 30px;
+	width: 150px;	
+}
+hr.scale {
+	width: 50px;
+}
+
+
+/*thumbnail*/
+div.thumbnail {
+	display: none;
+	position: absolute;
+	overflow: hidden;
+	z-index: 102;
+	width: 256px;
+	border: 5px solid #ffffff;
+	border: 5px solid rgba(255, 255, 255, 0.5);
+	color: white;
+	text-align: center;
+	text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+/*thumbnail position indicator*/
+div.thumbpos {
+	display: none;
+	position: absolute;
+	overflow: hidden;
+	z-index: 101;
+	background-color: rgba(54, 154, 202, 0.03);
+	border: 1pt solid #369aca;
+	cursor: pointer;
+}
+/*thumbnail image*/
+div.thumbimg {
+	display: none;
+	position: absolute;
+	overflow: hidden;
+	z-index: 100;
+	top: 0px;
+	right: 0px;
+	cursor: pointer;
+}
+
+
+/*key controls info*/
+div.controls{
+	position: absolute;
+	overflow: hidden;
+	z-index: 500;
+	top: 25%;
+	left: 25%;
+	height: 50%;
+	width: 50%;
+	background-color: #ffffff;
+	background-color: rgba(255, 255, 255, 0.75);
+	opacity: 0;
+}
+div.controls img{
+	display: block;
+	position: relative;
+	top: 5%;
+	max-height: 90%;
+	max-width: 90%;
+	margin: auto;
+}
+div.close{
+	display: block;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	height: 20px;
+	width: 20px;
+	background-color: rgba(255, 255, 255, 0);
+	color: #266c8e;
+	font-family: Arial, Verdana, sans-serif;
+}
+div.close:hover{
+	font-size: 110%;
+	cursor: pointer;
+}
+#cntrlButton{
+	position: absolute;
+	left: 30px;
+	height: 20px;
+	width: 150px;
+	background-color: #266c8e;
+	color: #ffffff;
+	text-align: left;
+	line-height: 20px;
+}
+#cntrlButton:hover{
+	font-size: 110%;
+	line-height: 20px;
+	cursor: pointer;
+}
+
+
+/*error bar and debug*/
+div.error {
+	position: absolute;
+	overflow: hidden;
+	z-index: 900;
+	top: 0px;
+	width: 100%;
+	max-height: 20%;
+	background-color: #ff0000;
+	background-color: rgba(255, 0, 0, 0.5);
+	border-width: 0px;
+	padding-top: 0;
+	color: #ffffff;
+	font-size: 16px;
+	font-family: sans-serif;
+	text-align: center;
+	text-shadow: none;
+}
+.debug {
+	display: none;
+}
+
+/*info*/
+/*reference bar*/
+div#copy a {
+	color: gray;
+	font-family: sans-serif;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: none;
+}
+/*Southampton logo*/
+.whitelogo{
+	border: 0px;
+	-webkit-filter: grayscale(100%) brightness(100);
+	-moz-filter: grayscale(100%) brightness(100);
+	-ms-filter: grayscale(100%) brightness(100);
+	-o-filter: grayscale(100%) brightness(100);
+	filter: grayscale(100%) brightness(100);
+	/*-ms-filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);*/
+}

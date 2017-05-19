@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html style="height: 100%;">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<meta name="author" content="Lasse Wollatz">
+<meta name="date" content="2015-02-18">
+<meta name="description" content="multi-resolution, tile-based 3D CT image viewer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D CT Viewer</title>
+<!--style-->
+<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="MCTV.css" type="text/css">
+<!--javascript-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="MCTV.js" type="text/javascript"></script>
+<!-- end head-->
+</head>
+    
+<body>
+    <noscript>
+		<blockquote>
+			<br/><br/><br/>
+			<b>JavaScript must be enabled in order for you to use the Mutiresolution Computed Tomography Viewer.</b>&nbsp;
+			However, it seems JavaScript is either disabled or not supported by your browser.&nbsp;    
+			To view this page, enable JavaScript by changing your browser options, and then try again.
+		</blockquote>
+	</noscript>
+    <div id="outerDiv0">
+		
+		<div id="outerDiv" style="position:relative; height:100%; width:100%; border:1px solid black; overflow:hidden;">
+        
+<!--Reference-->          
+			<div id="copy" style="text-shadow:none; text-align:center; position:fixed; bottom:10px; left:0px; width:100%; z-index:2;">
+				<a href="http://dx.doi.org/10.5258/SOTON/400332" target="_blank" style="width:100%;">
+					Mutiresolution Computed Tomography Viewer
+				</a>
+			</div>
+
+			<div id="innerDiv" style="position:relative; top:0px; left:0px; z-index:0;">				
+<!--Image Tiles-->          
+				<div id="imageTiles" style="position:relative; top:0; left:0; z-index:0; width:100%;">
+					<a id="mainTileA">
+						<img alt="busy loading" src="loading.gif" id="mainTile" style="position: absolute; left: 0px; top: 0px; z-index: -1; width: 1000px;">
+					</a>
+				</div>			
+<!--Labels-->     
+				<div id="imageLabels" style="position:relative; top:0; left:0; z-index:1; width:900000px; height:900000px;">
+				</div>
+			</div>
+			
+<!--Rule (during measurement)-->
+			<div id="ruler" class="ruler rulerlbl" style="display:none; position:absolute; top:510px; left:20px; width:160px; height:0px;"></div>
+<!--Scale-->
+			<div style="position:fixed; bottom:25px; left:250px; font-size:14px; text-align:center;">
+				<hr id="scale" style="width:50px;">
+				<div id="theScale"  class="rulerlbl"></div><br>
+			</div>
+<!--University of Southampton Logo-->
+			<div style="position:fixed; top:25px; right:25px; width:30%; max-width:200px;">
+				<a href="http://www.southampton.ac.uk" target="_blank">
+					<!--<img style="width:100%;" src="sotonlogo.gif"/>-->
+					<img style="width:100%;" class="whitelogo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/University_of_Southampton_Logo.svg/2000px-University_of_Southampton_Logo.svg.png"/>
+				</a>
+			</div>
+		</div>
+		
+<!--Toolbox-->
+		<div id="overlay" style="top:145px; left:-250px; width:220px;">
+			<br/>
+			<div id="zoom">
+				<div class="zoom icon left">
+					<a class="tooltip" title="Zoom In">
+						<span id="zoomouticonfa" class="fa fa-search-minus" title="Zoom Out"></span>
+						<img id="zoomouticon" class="nofa" src="zoomout.png" alt="Zoom Out"/>
+					</a>
+				</div>
+				<div class="zoom slider" id="zoomslider"></div>
+				<div class="zoom icon right">
+					<a class="tooltip" title="Zoom In">
+						<span id="zoominiconfa" class="fa fa-search-plus" title="Zoom In"></span>
+						<img id="zoominicon" class="nofa" src="zoomin.png" alt="Zoom In"/>
+					</a>
+				</div>
+			</div><br/>
+
+			<div id="slices">
+				<div class="slices icon left">
+					<a id="slidePrev" class="tooltip" title="Previous Slice">
+						<span id="slicepreviconfa" class="fa fa-arrow-left" title="Previous Slice"></span>
+						<img id="sliceprevicon" class="nofa" src="prev.png" alt="Previous Slice"/>
+					</a>
+				</div>
+				<div class="slices slider" id="sliceslider"></div>
+				<div class="slices icon right">
+					<a id="slideNext" class="tooltip" title="Next Slice">
+						<span id="slicenexticonfa" class="fa fa-arrow-right" title="Next Slice"></span>
+						<img id="slicenexticon" class="nofa" src="next.png" alt="Next Slice"/>
+					</a>
+				</div>
+			</div><br/><br/>
+			
+			<div id="thres">
+				<b>&nbsp;Density Range</b> (in HU)<b>:</b><br/>
+				<div class="thres slider" id="thresslider"></div>
+			</div><br/>
+			
+			<div><br/></div>
+						
+			<div id="coords">
+			</div><br/>
+			
+			<div id="wheelMode">
+				<b id="wmlbl">&nbsp;Mouse Wheel:</b><br/>
+				<div id="chkMW1div" class="optionbtnlbl">
+					<input id="chkMW1" class="nofa" name='wheelmode' type="radio" checked>
+					&nbsp;<span id="chkMW1fa" class="fa fa-fw fa-square"></span>&nbsp;Zoom
+				</div>
+				<div id="chkMW2div" class="optionbtnlbl">
+					<input id="chkMW2" class="nofa" name='wheelmode' type="radio">
+					&nbsp;<span id="chkMW2fa" class="fa fa-fw fa-square-o"></span>&nbsp;Next/Prev
+				</div>
+			</div><br/>
+			
+			<div id="clickMode">
+				<b id="cmlbl">&nbsp;Mouse Click:</b>
+				<div id="chkMC1div" class="optionbtnlbl">
+					<input id="chkMC1" class="nofa" name='clickmode' type="radio" checked>
+					&nbsp;<span id="chkMC1fa" class="fa fa-fw fa-square"></span>&nbsp;Drag
+				</div>
+				<div id="chkMC2div" class="optionbtnlbl">
+					<input id="chkMC2" class="nofa" name='clickmode' type="radio">
+					&nbsp;<span id="chkMC2fa" class="fa fa-fw fa-square-o"></span>&nbsp;Measure
+				</div>
+				<br/><div id="sleepRuler" class="ruler"></div>
+				<br/><!--
+				<div id="chkMC3div" class="optionbtnlbl">
+					<input id="chkMC3" class="nofa" name='clickmode' type="radio">
+					&nbsp;<span id="chkMC3fa" class="fa fa-fw fa-square-o"></span>&nbsp;Place Label
+				</div>-->
+			</div>
+			
+			<div id="cntrlButton">
+				&nbsp;<span class="fa fa-fw fa-info"></span><span class="nofa">&nbsp;&nbsp;&nbsp;</span>&nbsp;Key-Controls
+			</div>
+			
+			<div class="debug" id="debug"></div>
+			<div class="debug" id="debug2"></div>
+			<div class="debug" id="debug3"></div>
+		</div>
+		
+<!--Thumbnails-->
+		<div class="thumbnail" id="Thumb0" style="bottom:10px; right:10px;">
+			<div class="thumbimg" id="Thumb">
+				<div style="position:absolute; width:100%; text-align:center;">&nbsp;planar view</div>
+				<div><img id="timg" alt="thumbnail" src="temp.png"></div>
+			</div>
+			<div class="thumbpos" id="Thumb2"></div>
+		</div>
+		<div class="thumbnail" id="Thumb0C" style="bottom:300px; right:10px;">
+			<div class="thumbimg" id="ThumbC">
+				<div style="position:absolute; width:100%; text-align:center;">&nbsp;cross-sectional view</div>
+				<div><img id="tcimg" alt="thumbnail" src="temp.png"></div>
+			</div>
+			<div class="thumbpos" id="Thumb2C"></div>
+		</div>
+    
+	</div>
+
+<!--Controls-->
+	<div id="controls" class="controls">
+		<div id="closeControls" class="close">
+			<span class="fa fa-close"></span>
+			<span class="nofa"><b>x</b></span>
+		</div>
+		<img src="controls.png"/>
+	</div>
+	
+<!--Errorbar-->
+	<div class="error" id="error">ERROR</div>
+      
+</body>
+    
+</html>
+
