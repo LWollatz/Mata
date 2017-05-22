@@ -156,7 +156,7 @@ h1 {
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
-.menu a :hover {
+.menu a:hover {
   color: #ffffff;
   background-color: #369aca;
   font-size: 100%;
@@ -200,7 +200,7 @@ div#content {
   bottom: 0px;
   position: relative;
   /*min-height: calc(100vh - 90px);*/
-  max-height: calc(10vh);
+  max-height: calc(100vh - 90px);
   clear: left;
   overflow-y: auto;
   overflow-x: hidden;
@@ -220,8 +220,8 @@ div.metadata {
   clear: left;
   overflow: hidden;
   width: 120px;
-  min-height: calc(5vh);
-  max-height: calc(5vh);
+  min-height: calc(100vh - 95px);
+  max-height: calc(100vh - 95px);
   word-wrap: break-word;
   padding-top: 5px;
   padding-left: 5px;
@@ -236,7 +236,7 @@ div.metadata.fw {
 }
 div.metadata:hover {
   width: 30%;
-  min-height: calc(5vh);
+  min-height: calc(100vh - 95px);
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
@@ -248,7 +248,7 @@ div.datacontent {
 }
 div.datacontent iframe {
   width: 100%;
-  height: calc(10vh);
+  height: calc(100vh - 90px);
   border: none;
 }
 div.files {
@@ -277,27 +277,27 @@ div.files {
 .btn a:hover {
   color: #ffffff;
 }
-.btn .btn-search {
+.btn.btn-search {
   color: #ffffff;
   background-color: #266c8e;
 }
-.btn .btn-search:hover {
+.btn.btn-search:hover {
   color: #ffffff;
   background-color: #369aca;
 }
-.btn .btn-submit {
+.btn.btn-submit {
   color: #ffffff;
   background-color: #4f5a20;
 }
-.btn .btn-submit:hover {
+.btn.btn-submit:hover {
   color: #ffffff;
   background-color: #979e45;
 }
-.btn .btn-abort {
+.btn.btn-abort {
   color: #ffffff;
   background-color: #ab1212;
 }
-.btn .btn-abort:hover {
+.btn.btn-abort:hover {
   color: #ffffff;
   background-color: #f00f2c;
 }
