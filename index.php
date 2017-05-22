@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<!--php-->
-<?php 
+<?php
+/*<!--php-->*/
 include "_LayoutDatabase.php";
 /* Query SQL Server for the data */   
 $tsql = "SELECT TOP 1000 [ID]
@@ -19,14 +18,14 @@ if( $stmt === false )
      die( print_r( sqlsrv_errors(), true));  
 }
 ?>
-<!--metadata-->
-<?php $PageTitle = MEDDATA; ?>
-<?php include "_LayoutMetadata.php"; ?> 
-<!--style-->
-<?php echo file_get_contents("_LayoutStyles.php"); ?> 
-<!--scripts-->
-<?php echo file_get_contents("_LayoutJavascript.php"); ?> 
-
+<head>
+	<!--metadata-->
+	<?php $PageTitle = "MEDDATA"; ?>
+	<?php include "_LayoutMetadata.php"; ?> 
+	<!--style-->
+	<?php include "_LayoutStyles.php"; ?> 
+	<!--scripts-->
+	<?php include "_LayoutJavascript.php"; ?> 
 </head>
 
 <body>
@@ -51,7 +50,10 @@ include "_LayoutHeader.php";
 </div>
 
 <!--footer-->
-<?php include "_LayoutFooter.php"; ?> 
+<?php 
+sqlsrv_free_stmt( $stmt);
+include "_LayoutFooter.php"; 
+?> 
 
 </body>
 </html>

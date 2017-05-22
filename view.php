@@ -1,22 +1,10 @@
 <!DOCTYPE html>
-
 <html style="height: 100%;">
-
-<head>
 <?php
-$serverName = "MEDDATA"; //serverName\instanceName
-$connectionInfo = array( "Database"=>"MEDDATADB" );
-/* Connect using Windows Authentication. */  
-$conn = sqlsrv_connect( $serverName, $connectionInfo);  
-if( $conn === false )  
-{  
-     echo "Unable to connect.</br>";  
-     die( print_r( sqlsrv_errors(), true));  
-}
+/*<!--php-->*/
+include "_LayoutDatabase.php";
 /* get variables */
 $imageID = (int)$_GET['imgID'];
-$InfoMsg = $_GET['msg'];
-$ErrorMsg = $_GET['err'];
 
 /* Query SQL Server for the login of the user accessing the  
 database. */   
@@ -65,55 +53,25 @@ $owner = sqlsrv_fetch_array($srowner);
 $relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
 $relpath = str_replace("\\", "/", $relpath);
 ?>
-<!--meta data-->
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-<meta content="utf-8" http-equiv="encoding">
-<meta name="author" content="Lasse Wollatz">
-<meta name="date" content="2017-04-25">
-<meta name="description" content="multi-resolution, tile-based 3D CT image viewer">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?php echo $row['Name']; ?> | MEDDATA</title>
-<link rel="icon" 
-      type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico">
-
-<!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="styles/main.css" type="text/css">
-
-<!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="/js/messages.js" type="text/javascript"></script>
-<script src="/js/folding.js" type="text/javascript" ></script>
-<!-- end head-->
-
+<head>
+	<!--metadata-->
+	<?php $PageTitle = $row['Name']." | MEDDATA"; ?>
+	<?php $PageKeywords = ", multi-resolution, tile-based 3D CT image viewer"; ?>
+	<?php include "_LayoutMetadata.php"; ?> 
+	<!--style-->
+	<?php include "_LayoutStyles.php"; ?> 
+	<!--scripts-->
+	<?php include "_LayoutJavascript.php"; ?>
+	<script src="/js/folding.js" type="text/javascript"></script>
 </head>
 
 <body>
-<div id="header">
-	<h1>Dataset <?php echo $row['Name']; ?></h1>
-	<form action="search.php" accept-charset="utf-8" method="post" class="menu">
-		<!--<div class="menu">-->
-			<a href="index.php"><i class="fa fa-home"></i> Home</a>
-			<a href="tags.php"><i class="fa fa-tags"></i> Tags</a>
-			<a href="info.php"><i class="fa fa-info"></i> Info</a>
-			<a href="edit.php?imgID=<?php echo $imageID?>"><i class="fa fa-edit"></i> Edit</a>
-			<input name="utf8" type="hidden" value="&#x2713;" />
-			<button type="submit" class="btn btn-search search">
-				<i class="fa fa-search"></i>
-			</button>
-			<input type="text" name="sphrase" class="search" value="" placeholder="Search.."/>
-		<!--</div>-->
-	</form>
-</div>
-<div style="top:0px" class="error" id="error">
-<?php echo $ErrorMsg; ?>
-</div>
-<div style="top:0px" class="info" id="info">
-<?php echo $InfoMsg; ?>
-</div> 
+
+<?php 
+$MenuEntries = '<a href="edit.php?imgID='.$imageID.'"><i class="fa fa-edit"></i> Edit</a>';
+include "_LayoutHeader.php"; 
+?> 
+
 <div id="content">
 <div class="metadata">
 <table style="width:100%;">
@@ -149,7 +107,8 @@ while($tag = sqlsrv_fetch_array($srtags)) {
 /* Retrieve and display the results of the query. */
 $savedparts = array();
 while($file = sqlsrv_fetch_array($srfiles)) {
-	$fileending = end(explode('.',$file['Filename']));
+	$fileparts = explode('.',$file['Filename']);
+	$fileending = end($fileparts);
 	if (strpos(".tif.tiff.bmp.png.jpg", $fileending) === FALSE){
 		$filepath = str_replace("c:\\", "//meddata.clients.soton.ac.uk/", $file['BasePath']);
 		$filepath = str_replace("\\", "/", $filepath);
@@ -169,7 +128,7 @@ while($file = sqlsrv_fetch_array($srfiles)) {
 			  array_splice($savedparts, -1, 1);
 			}
 			$cntr = sizeof($savedparts)-1;
-			while (($savedparts[$cntr] != $curparts[$cntr]) && ($cntr >= 0)){
+			while (($cntr >= 0) && ($savedparts[$cntr] != $curparts[$cntr])){
 			  echo "</ul></li>";
 			  $cntr = $cntr - 1;
 			}
@@ -220,8 +179,9 @@ while (sizeof($savedparts)>1){
 /* Free statement and connection resources. */  
 sqlsrv_free_stmt( $srinfo);  
 sqlsrv_free_stmt( $srtags);
-sqlsrv_free_stmt( $fsql);
-sqlsrv_close( $conn);
+sqlsrv_free_stmt( $srfiles);
+sqlsrv_free_stmt( $srowner);
+include "_LayoutFooter.php"; 
 ?>
 
 

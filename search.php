@@ -1,46 +1,17 @@
-<html>
-<head>
-<!--metadata-->
-<title>Searchresults | MEDDATA</title>
-<link rel="icon" 
-      type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico">
-
-<!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="styles/main.css" type="text/css">
-
-<!--php-->
+<!DOCTYPE html>
+<html lang="en">
 <?php
-$ErrorMsg = "";
-$InfoMsg = "";
-$serverName = "MEDDATA"; //serverName\instanceName
-$connectionInfo = array( "Database"=>"MEDDATADB" );
-/* Connect using Windows Authentication. */  
-$conn = sqlsrv_connect( $serverName, $connectionInfo);  
-if( $conn === false )  
-{  
-     $ErrorMsg = $ErrorMsg."Unable to connect.</br>";  
-     die( print_r( sqlsrv_errors(), true));  
-}else{
-     $InfoMsg = $InfoMsg."Connection successful.<br />";
-}
+/*<!--php-->*/
+include "_LayoutDatabase.php";
 
+$searchphrase = "";
+if (isset($_POST["sphrase"])){
 	$searchphrase = $_POST["sphrase"];
 	$searchphrase = htmlspecialchars($searchphrase,ENT_QUOTES);
+}
+
 
 /* Query SQL Server for the data */
-  
-$tsql = "SELECT TOP 20 [ID]
-      ,[Name]
-      ,[Date]
-      ,[Description]
-      ,[DefaultBasePath]
-  FROM [MEDDATADB].[dbo].[Experiments]
-  WHERE [ExperimentTypeID] = 0
-  AND ([Name] LIKE '%'+?+'%'
-  OR [Description] LIKE '%'+?+'%')";
   
 $tsql = "SELECT TOP 20 [MEDDATADB].[dbo].[Experiments].[ID]
       ,[MEDDATADB].[dbo].[Experiments].[Name]
@@ -64,38 +35,22 @@ if( $stmt === false )
 }
 $resultCount = sqlsrv_num_rows($stmt);
 ?>
-
-<!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="/js/messages.js" type="text/javascript"></script>
-
+<head>
+	<!--metadata-->
+	<?php $PageTitle = "Searchresults | MEDDATA"; ?>
+	<?php include "_LayoutMetadata.php"; ?> 
+	<!--style-->
+	<?php include "_LayoutStyles.php"; ?> 
+	<!--scripts-->
+	<?php include "_LayoutJavascript.php"; ?> 
 </head>
+
 <body>
 
-<div style="top:0px" class="error" id="error">
-<?php echo $ErrorMsg; ?>
-</div>
-<div style="top:0px" class="info" id="info">
-<?php echo $InfoMsg; ?>
-</div> 
-
-
-<div id="header">
-	<h1>MEDDATA 2</h1>
-	<form action="search.php" accept-charset="utf-8" method="post" class="menu">
-		<!--<div class="menu">-->
-			<a href="index.php"><i class="fa fa-home"></i> Home</a>
-			<a href="tags.php"><i class="fa fa-tags"></i> Tags</a>
-			<a href="info.php"><i class="fa fa-info"></i> Info</a>
-			<input name="utf8" type="hidden" value="&#x2713;" />
-			<button type="submit" class="btn btn-search search">
-				<i class="fa fa-search"></i>
-			</button>
-			<input type="text" name="sphrase" class="search" value="<?php echo $searchphrase ?>" placeholder="Search.."/>
-		<!--</div>-->
-	</form>
-</div>
+<?php 
+$MenuEntries = "";
+include "_LayoutHeader.php"; 
+?>
 
 <div id="content">
 <div>
@@ -111,10 +66,12 @@ while($row = sqlsrv_fetch_array($stmt)) {
 </div>
 
 </div>
+
+<!--footer-->
 <?php
 /* Free statement and connection resources. */  
 sqlsrv_free_stmt( $stmt);  
-sqlsrv_close( $conn);  
+include "_LayoutFooter.php"; 
 ?>
 
 

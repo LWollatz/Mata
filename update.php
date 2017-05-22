@@ -1,8 +1,5 @@
 <?php
-    header('Content-Type:text/html; charset=UTF-8');
-    $serverName = "MEDDATA";
-    $connectionInfo = array( "Database"=>"MEDDATADB" );
-    $conn = sqlsrv_connect( $serverName, $connectionInfo);  
+	include "_LayoutDatabase.php"; 
     if( $conn === false )  
     {   
         die( print_r( sqlsrv_errors(), true));  
@@ -154,16 +151,18 @@
     }
 	
 	/***UPDATE PREVIEWER***/
-	$string = file_get_contents($relpath);
-    $json_obj = json_decode($string, true);
-	$json_obj['width'] = $ud_prvWidth;
-	$json_obj['height'] = $ud_prvHeight;
-	$json_obj['res'] = $ud_prvRes;
-	$json_obj['zres'] = $ud_prvZres;
-	$json_obj['resunits'] = $ud_prvResunit;
-	$json_obj['densmin'] = $ud_prvDensmin;
-	$json_obj['densmax'] = $ud_prvDensmax;
-	file_put_contents($relpath, json_encode($json_obj));
+	if (file_exists($relpath)){
+		$string = file_get_contents($relpath);
+		$json_obj = json_decode($string, true);
+		$json_obj['width'] = $ud_prvWidth;
+		$json_obj['height'] = $ud_prvHeight;
+		$json_obj['res'] = $ud_prvRes;
+		$json_obj['zres'] = $ud_prvZres;
+		$json_obj['resunits'] = $ud_prvResunit;
+		$json_obj['densmin'] = $ud_prvDensmin;
+		$json_obj['densmax'] = $ud_prvDensmax;
+		file_put_contents($relpath, json_encode($json_obj));
+	}
 
 
     header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);

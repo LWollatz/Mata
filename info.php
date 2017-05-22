@@ -1,26 +1,19 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<!--metadata-->
-<title>Info | MEDDATA</title>
-<link rel="icon" 
-      type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico">
-
-<!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="styles/main.css" type="text/css">
-<!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="/js/messages.js" type="text/javascript"></script>
-
+	<!--metadata-->
+	<?php $PageTitle = "Info | MEDDATA"; ?>
+	<?php include "_LayoutMetadata.php"; ?> 
+	<!--style-->
+	<?php include "_LayoutStyles.php"; ?> 
+	<!--scripts-->
+	<?php include "_LayoutJavascript.php"; ?> 
 </head>
 
 <body>
 
 <div id="header">
-	<h1>MEDDATA 2</h1>
+	<h1>MEDDATA</h1>
 	<form action="search.php" accept-charset="utf-8" method="post" class="menu">
 		<a href="index.php"><i class="fa fa-home"></i> Home</a>
 		<a href="tags.php"><i class="fa fa-tags"></i> Tags</a>
@@ -63,30 +56,33 @@ open http://meddata.clients.soton.ac.uk in a browser
 </ol>
 
 <h2>Software used</h2>
-<ul>
-	<li><i class="fa fa-windows"></i> Windows Server 2012 R2 Standard Evaluation</li>
-	<li><a href="http://fontawesome.io/examples/">Heterogeneous Data Center</a> filewatcher</li>
-	<li>For the website
-		<ul>
-			<li>Microsoft IIS</li>
-			<li>Microsoft SQL Server</li>
-			<li>MCTV</li>
-			<li>PHP <?php echo phpversion(); ?></li><!-- phpinfo(); -->
-			<li><i class="fa fa-html5"></i> HTML 5</li>
-			<li><i class="fa fa-css3"></i> CSS 3</li>
-			<li>Javascript</li>
-			<li><a href="https://jquery.com/">jQuery</a></li>
-			<li><i class="fa fa-fa"></i> <a href="http://fontawesome.io">Font Awesome</a></li>
+<ul class="tree fa-ul">
+	<li class="tree"><i class="fa fa-fw fa-windows"></i>Windows Server 2012 R2 Standard Evaluation</li>
+	<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://fontawesome.io/examples/">Heterogeneous Data Center</a> filewatcher</li>
+	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the website
+		<ul class="tree fa-ul">
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft IIS</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft SQL Server</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>MCTV</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>PHP <?php echo phpversion(); ?></li><!-- phpinfo(); -->
+			<li class="tree"><i class="fa fa-fw fa-html5"></i>HTML 5</li>
+			<li class="tree"><i class="fa fa-fw fa-css3"></i>CSS 3</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Javascript</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="https://jquery.com/">jQuery</a></li>
+			<li class="tree"><i class="fa fa-fw fa-fa"></i><a href="http://fontawesome.io">Font Awesome</a></li>
 		</ul>
 	</li>
-	<li>For the tiler
-		<ul>
-			<li>Erlang OTP 19.3</li>
-			<li>Rabbit MQ 3.6.9</li>
-			<li><a href="http://www.celeryproject.org/">Celery</a> 3.1.25</li>
-			<li>Python 2.7 with PILlow</li>
+	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the tiler
+		<ul class="tree fa-ul">
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Erlang OTP 19.3</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Rabbit MQ 3.6.9</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.celeryproject.org/">Celery</a> 3.1.25</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Python 2.7 with PILlow</li>
 		</ul>
 	</li>
 </ul>
+
+<!--<?php phpinfo(); ?>-->
+
 </body>
 </html>

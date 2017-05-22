@@ -1,15 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html style="height: 100%;">
 <?php
-header('Content-Type:text/html; charset=UTF-8');
-$serverName = "MEDDATA"; //serverName\instanceName
-$connectionInfo = array( "Database"=>"MEDDATADB" );
-/* Connect using Windows Authentication. */  
-$conn = sqlsrv_connect( $serverName, $connectionInfo);  
-if( $conn === false )  
-{  
-     echo "Unable to connect.</br>";  
-     die( print_r( sqlsrv_errors(), true));  
-}
+/*<!--php-->*/
+include "_LayoutDatabase.php";
+
 /* get variables */
 $imageID = (int)$_GET['imgID'];
 
@@ -50,21 +44,14 @@ $relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
 $relpath = str_replace("\\", "/", $relpath);
 ?>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta charset="utf-8">
-<title>Edit <?php echo $row['Name']; ?> | MEDDATA</title>
-<link rel="icon" 
-      type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico">
-
+<!--metadata-->
+<?php $PageTitle = "Edit ".$row['Name']." | MEDDATA"; ?>
+<?php $PageKeywords = ", multi-resolution, tile-based 3D CT image viewer"; ?>
+<?php include "_LayoutMetadata.php"; ?> 
 <!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="styles/main.css" type="text/css">
-
-<!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<?php include "_LayoutStyles.php"; ?> 
+<!--scripts-->
+<?php include "_LayoutJavascript.php"; ?>
 <script>
 $( function() {
 	var availableTags = [
@@ -85,22 +72,11 @@ while($key = sqlsrv_fetch_array($srtagsPre)) {
 </head>
 
 <body>
-<div id="header">
-	<h1>Edit <?php echo $row['Name']; ?></h1>
-	<form action="search.php" accept-charset="utf-8" method="post" class="menu">
-		<!--<div class="menu">-->
-			<a href="index.php"><i class="fa fa-home"></i> Home</a>
-			<a href="tags.php"><i class="fa fa-tags"></i> Tags</a>
-			<a href="info.php"><i class="fa fa-info"></i> Info</a>
-			<a href="view.php?imgID=<?php echo $imageID?>"><i class="fa fa-close"></i> Cancel</a>
-			<input name="utf8" type="hidden" value="&#x2713;" />
-			<button type="submit" class="btn btn-search search">
-				<i class="fa fa-search"></i>
-			</button>
-			<input type="text" name="sphrase" class="search" value="" placeholder="Search.."/>
-		<!--</div>-->
-	</form>
-</div>
+
+<?php 
+$MenuEntries = '<a href="view.php?imgID='.$imageID.'"><i class="fa fa-close"></i> Cancel</a>';
+include "_LayoutHeader.php"; 
+?> 
 
 <div id="content">
 <form action="update.php" accept-charset="utf-8" method="post">
@@ -146,6 +122,7 @@ while($tag = sqlsrv_fetch_array($srtags)) {?>
 	<td><input type="text" name="ud_newvalue" value=""></td>
 </tr>
 
+<?php if (file_exists($relpath."/.previews/infoJSON.txt")){ ?>
 <tr><td class="theader">Previewer Values:</td><td><input type="hidden" name="relpath" value="<?php echo $relpath.'/.previews/infoJSON.txt';?>"></td></tr>
 <?php
 $string = file_get_contents($relpath."/.previews/infoJSON.txt");
@@ -157,6 +134,9 @@ $json_a = json_decode($string, true);?>
 <tr><td>resunits:</td><td><input type="text" name="ud_prvResunit" value="<?php echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");?>"></td></tr> <!--html_entity_decode(-->
 <tr><td>densmin:</td><td><input type="text" name="ud_prvDensmin" value="<?php echo $json_a['densmin'];?>"></td></tr>
 <tr><td>densmax:</td><td><input type="text" name="ud_prvDensmax" value="<?php echo $json_a['densmax'];?>"></td></tr>
+
+<?php } ?>
+
 </table>
 
 </td>
@@ -170,8 +150,11 @@ $json_a = json_decode($string, true);?>
 
 <?php
 /* Free statement and connection resources. */  
-sqlsrv_free_stmt( $stmt);  
-sqlsrv_close( $conn);  
+sqlsrv_free_stmt( $srinfo);
+sqlsrv_free_stmt( $srtags);
+sqlsrv_free_stmt( $srtagsPre);
+sqlsrv_free_stmt( $tagkeys);
+include "_LayoutFooter.php"; 
 ?>
 
 

@@ -1,14 +1,7 @@
-<html>
-<head>
-
-
-<!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="styles/main.css" type="text/css">
-
-<!--php-->
+<!DOCTYPE html>
+<html style="height: 100%;">
 <?php
+/*<!--php-->*/
 $ErrorMsg = "";
 $InfoMsg = "";
 $serverName = "MEDDATA"; //serverName\instanceName
@@ -47,20 +40,16 @@ if( $stmt === false )
      die( print_r( sqlsrv_errors(), true));  
 }
 ?>
-
-<!--metadata-->
-<title>Tag <?php echo $tagvalue; ?> | MEDDATA</title>
-<link rel="icon" 
-      type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico">
-
-
-<!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="/js/messages.js" type="text/javascript"></script>
-
+<head>
+	<!--metadata-->
+	<?php $PageTitle = "Tag ".$tagvalue." | MEDDATA"; ?>
+	<?php include "_LayoutMetadata.php"; ?> 
+	<!--style-->
+	<?php include "_LayoutStyles.php"; ?> 
+	<!--scripts-->
+	<?php include "_LayoutJavascript.php"; ?> 
 </head>
+
 <body>
 
 <div style="top:0px" class="error" id="error">
