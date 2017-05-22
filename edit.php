@@ -74,12 +74,19 @@ while($key = sqlsrv_fetch_array($srtagsPre)) {
 <body>
 
 <?php 
-$MenuEntries = '<a href="view.php?imgID='.$imageID.'"><i class="fa fa-close"></i> Cancel</a>';
+$MenuEntry1 = '<a class="btn btn-abort" href="view.php?imgID='.$imageID.'"><i class="fa fa-close"></i> Cancel</a>';
+$MenuEntry2 = '<button type="submit" form="mainform" class="btn btn-submit">
+	<i class="fa fa-floppy-o"></i> Save
+</button>';
+$MenuEntry3 = '<button type="reset" form="mainform" class="btn btn-abort">
+	<i class="fa fa-undo"></i> Undo
+</button>';
+$MenuEntries = $MenuEntry1;
 include "_LayoutHeader.php"; 
 ?> 
 
 <div id="content">
-<form action="update.php" accept-charset="utf-8" method="post">
+<form action="update.php" accept-charset="utf-8" method="post" id="mainform">
 <table style="width:100%;">
 <tr>
 <td style="word-wrap:break-word;">
@@ -142,10 +149,22 @@ $json_a = json_decode($string, true);?>
 </td>
 </tr></table>
 <input name="utf8" type="hidden" value="&#x2713;" />
-<button type="submit" class="btn btn-submit">
-	<i class="fa fa-floppy-o"></i> Save changes
-</button>
+
+
+<div class="btngroup">
+	<button type="submit" form="mainform" class="btn btn-submit">
+		<i class="fa fa-floppy-o"></i> Save
+	</button>
+	<button type="reset" form="mainform" class="btn btn-abort">
+		<i class="fa fa-undo"></i> Undo
+	</button>
+	<a class="btn btn-abort" style="color:#ffffff;" href="view.php?imgID=<?php echo $imageID;?>">
+		<i class="fa fa-close"></i> Cancel
+	</a>
+</div>
 </form>
+
+
 </div>
 
 <?php

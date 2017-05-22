@@ -2188,6 +2188,21 @@ function initOnclicks() {
     document.getElementById("slicenexticonfa").onmouseup = sliceNextDef;
 }
 
+
+function hideFullTools() { 
+/*hide Mouse Wheel option and position
+ */
+    document.getElementById('wheelMode').style.display = "none";
+    document.getElementById('coords').style.display = "none";
+}
+
+function showFullTools() { 
+/*show Mouse Wheel option and position
+ */
+    document.getElementById('wheelMode').style.display = "block";
+    document.getElementById('coords').style.display = "block";
+}
+
 function winsize() { 
 /*repositions the image and deals with variable changes in case of the window being rescaled
  *this always happens on page load!
@@ -2229,14 +2244,19 @@ function winsize() {
             }
         }
         try {
-            if (viewportWidth >= 700) {
+            if (viewportWidth >= 700 && viewportHeight >= 450) {
                 if(loadedJSON){
                   showThumb();
                 }
                 showControlsBtn();
-            } else if (viewportWidth <= 600) {
+            }else if (viewportWidth <= 600 || viewportHeight <= 400) {
                 hideThumb();
                 hideControlsBtn();
+            }
+			if (viewportHeight >= 450) {
+				showFullTools();
+            } else if (viewportHeight <= 400) {
+				hideFullTools();
             }
             removeError(errmsg);
             //updateInfo();

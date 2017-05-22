@@ -1,6 +1,7 @@
 @charset 'UTF-8';
 body{
-	height: 100%; 
+	height: 100%;
+    min-height: 100%;	
 	margin: 0pt; 
 	background-color: #ffffff;
 	color: black;
@@ -8,6 +9,13 @@ body{
 	font-family: sans-serif;
 	text-shadow: none;
 	text-align: left;
+}
+
+button.btn a{
+	color: #ffffff;
+}
+button.btn a:hover{
+	color: #ffffff;
 }
 
 #content a{
@@ -58,16 +66,16 @@ body{
 ul.tree {
     list-style: none;
     margin: 0;
-    padding: 0;
+    /*padding: 0;*/
 }
 li.tree {
-    //background-image: url(page.png);
+    /*background-image: url(page.png);
     background-position: 0 1px;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;*/
     padding-left: 20px;
 }
 li.tree.folder {
-    //background-image: none;
+    /*background-image: none;*/
 }
 
 #content a.tree {
@@ -101,7 +109,8 @@ div#header{
 	top: 0px;
 	width: 100%;
 	position: relative;
-    margin: 0px 0px 5px 0px;
+    margin: 0px 0px 0px 0px;
+	overflow-x: hidden;
 }
 
 h1{
@@ -113,9 +122,14 @@ h1{
 	color: #ffffff;
 	background-color: #266c8e;
 	margin: 0px 0px 0px 0px;
+	padding: 1px 0px 1px 0px;
+	width: 100%;
+	float:left;
+	clear: left;
 }
 
 .menu a{
+	float:left;
 	border-radius: 0px;
 	border: none;
 	padding: 5px 20px;
@@ -133,6 +147,17 @@ h1{
 .menu a:hover{
 	color: #ffffff;
 	background-color: #369aca;
+	font-size: 100%;
+}
+
+.menu a.abort:hover{
+	color: #ffffff;
+	background-color: #ab1212;
+	font-size: 100%;
+}
+.menu a.confirm:hover{
+	color: #ffffff;
+	background-color: #323d43;
 	font-size: 100%;
 }
 
@@ -168,7 +193,72 @@ h1{
 
 div#content{
 	top: 0px;
+	bottom: 0px;
 	position:relative;
+	/*min-height: calc(100vh - 90px);*/
+	max-height: calc(100vh - 90px);
+	clear: left;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+footer{
+	bottom: 0px;
+	position: fixed;
+	width: 100%;
+    text-align: center;
+	color: #ffffff;
+	background-color: #266c8e;
+	padding-top: 5px;
+	margin: 0px 0px 0px 0px;
+}
+
+div.metadata{
+	float: left;
+	clear: left;
+	overflow: hidden;
+	width: 120px;
+	min-height: calc(100vh - 95px);
+	max-height: calc(100vh - 95px);
+	word-wrap: break-word;
+	padding-top: 5px;
+	padding-left: 5px;
+	border-right-width: 3px;
+	border-right-color: #323D43;
+	border-right-style: solid;
+	-webkit-transition: 0.4s ease-in-out;
+    transition: 0.4s ease-in-out;
+}
+
+div.metadata.fw{
+	width: 30%;
+}
+
+div.metadata:hover{
+	width: 30%;
+	min-height:calc(100vh - 95px);
+	-webkit-transition: 0.4s ease-in-out;
+    transition: 0.4s ease-in-out;
+}
+
+div.datacontent{
+	/*margin-left: 155px;*/
+    overflow: hidden;
+	clear: right;
+	margin-bottom: -10px;
+}
+
+div.datacontent iframe{
+	width:100%;
+	height:calc(100vh - 90px);
+	border:none;
+}
+
+div.files{
+	overflow: auto;
+	clear: right;
+	padding-top: 5px;
+	padding-left: 5px;
 }
 
 .btn{
@@ -184,6 +274,16 @@ div#content{
     transition-duration: 0.4s;
 }
 
+
+
+button.btn a{
+	color: #ffffff;
+}
+
+button.btn a:hover{
+	color: #ffffff;
+}
+
 .btn.btn-search{
 	color: #ffffff;
 	background-color: #266c8e;
@@ -194,15 +294,52 @@ div#content{
 	background-color: #369aca;	
 }
 
+/*.menu .btn-submit{
+	color: #ffffff;
+	background-color: #266c8e;
+}*/
+
 .btn.btn-submit{
+	color: #ffffff;
+	background-color: #4f5a20;
+}
+
+/*.menu .btn-submit:hover{
+	color: #ffffff;
+	background-color: #979e45;
+}*/
+
+.btn.btn-submit:hover{
 	color: #ffffff;
 	background-color: #979e45;
 }
 
-.btn.btn-submit:hover{
+.btn.btn-abort{
 	color: #ffffff;
-	background-color: #323D43;
+	background-color: #ab1212; 
 }
+
+.btn.btn-abort:hover{
+	color: #ffffff;
+	background-color: #f00f2c;
+}
+
+.menu .btn{
+	color: #ffffff;
+	background-color: #266c8e;
+}
+
+.btngroup{
+	border-radius: 5px;
+	border-style: solid;
+	border-color: #266c8e;
+	border-width: 3px;
+	padding: 5px 5px 5px 5px;
+	margin: 5px 5px 5px 5px;
+	display: inline-block;
+}
+
+
 
 .inpdesc {
 	padding: 2px 5px 0px -5px;
@@ -312,6 +449,9 @@ div.info {
 .debug {
 	display: none;
 }
+
+
+
 
 /*Southampton logo*/
 .whitelogo{

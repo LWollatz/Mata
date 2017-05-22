@@ -73,11 +73,12 @@ include "_LayoutHeader.php";
 ?> 
 
 <div id="content">
-<div class="metadata">
-<table style="width:100%;">
-<tr>
-<td style="width:150pt;max-width:150pt;word-wrap:break-word;">
 
+<?php if( file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<div class="metadata">
+<?php }else{ ?>
+<div class="metadata fw">
+<?php } ?>
 <?php
 /* Display the results of the query. */
 echo "<b>Name:</b> ".$row['Name']."<br/>";
@@ -85,8 +86,8 @@ echo "<b>Date:</b> ".$row['Date']->format("d/m/Y H:i:s")."<br/>";
 echo "<b>Description:</b> <i>".$row['Description']."</i><br/>";
 echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>";
 ?>
-<b><i class="fa fa-tags"></i>Tags:</b>
-<ul class="fa-ul">
+<i class="fa fa-tags"></i> <b>Tags:</b> 
+<ul class="fa-ul" style="margin-top:0px;">
 <?php
 /* Retrieve and display the results of the query. */
 while($tag = sqlsrv_fetch_array($srtags)) {
@@ -94,14 +95,12 @@ while($tag = sqlsrv_fetch_array($srtags)) {
 }
 ?>
 </ul>
-</td>
-<td>
-<?php if(file_exists($relpath."/.previews/infoJSON.txt")){ ?>
-<iframe style="width:100%;height:500pt" src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
-</iframe>
+<?php if( !file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+</div>
+<div class="files">
 <?php } ?>
 
-<i class=" fa fa-clone"></i> Files:
+<i class=" fa fa-files-o"></i> <b>Files:</b>
 <ul class="tree fa-ul">
 <?php
 /* Retrieve and display the results of the query. */
@@ -168,13 +167,14 @@ while (sizeof($savedparts)>1){
 }
 ?>
 </ul>
-
-</td>
-</tr></table>
 </div>
-
+<?php if(file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<div class="datacontent">
+<iframe src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
+</iframe>
 </div>
-
+<?php } ?>
+</div>
 <?php
 /* Free statement and connection resources. */  
 sqlsrv_free_stmt( $srinfo);  
@@ -183,9 +183,5 @@ sqlsrv_free_stmt( $srfiles);
 sqlsrv_free_stmt( $srowner);
 include "_LayoutFooter.php"; 
 ?>
-
-
-
- 
 </body>
 </html>

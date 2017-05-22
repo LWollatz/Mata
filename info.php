@@ -25,6 +25,9 @@
 		<input type="text" name="sphrase" class="search" value="" placeholder="Search.."/>
 	</form>
 </div>
+
+<div id="content">
+
 <h2>How to connect:</h2>
 requires VPN to soton.ac.uk
 <h3>Connect to website</h3>
@@ -83,6 +86,9 @@ open http://meddata.clients.soton.ac.uk in a browser
 </ul>
 
 <!--<?php phpinfo(); ?>-->
-
+</div>
+<footer>
+MEDDATA (c)2017
+</footer>
 </body>
 </html>
