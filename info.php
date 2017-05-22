@@ -87,8 +87,6 @@ open http://meddata.clients.soton.ac.uk in a browser
 
 <!--<?php phpinfo(); ?>-->
 </div>
-<footer>
-MEDDATA (c)2017
-</footer>
+<?php include "_LayoutFooter.php";?>
 </body>
 </html>
