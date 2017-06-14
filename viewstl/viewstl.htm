@@ -10,7 +10,7 @@
 		<meta name="description" content="View 3D STL files directly in your browser - no software installation is required">
 		<style type="text/css">
 			html {margin: 0;}
-			body {margin: 0;}
+			body {margin: 0;overflow:hidden;}
 			
 			.cinfo
 			{
@@ -328,122 +328,30 @@
 			
 			function recalc_units()
 			{
-								if (file_units==view_units)
-					set_vol_and_size(vol, xsize, ysize, zsize);
-				else if (file_units==1)
-					//file in mm, view in inches
-					set_vol_and_size(vol/16387.064, xsize/25.4, ysize/25.4, zsize/25.4);
-				else
-					//file in inches, view in mm
-					set_vol_and_size(vol*16387.064, xsize*25.4, ysize*25.4, zsize*25.4);
 							}
 
-						
-			function geo_to_vf(geo)
-			{
-				var vertices=[];
-				var faces=[];
-				
-				var len=geo.vertices.length;
-				for (i=0;i<len;i++)
-					vertices.push([geo.vertices[i].x,geo.vertices[i].y,geo.vertices[i].z]);
-
-				var len=geo.faces.length;
-				for (i=0;i<len;i++)
-				{
-					var a=[geo.faces[i].a,geo.faces[i].b,geo.faces[i].c];
-					if (colored_model)
-						a.push({r:geo.faces[i].color.r,g:geo.faces[i].color.g,b:geo.faces[i].color.b});
-
-					faces.push(a);
-				}
-				
-				
-				//console.log(faces);
-				return ({vertices:vertices, faces:faces});
-			}			
-			
-			function send_to_ts()
-			{
-				if (waiting) return;
-				if (!mesh) return;
-				
-				cancel_3dp=false;
-				var pbar=$id('pbar_3dp');
-				pbar.value=0;
-				pbar.style.visibility='visible';
-				$id('pwait_txt').innerHTML="Preparing file for 3D Printing";
-				$id('c3dp').style.visibility='visible';
-				$id('wtext').style.height="80px";
-				$id('pwait').style.display='block';
-				
-				var xhr = new XMLHttpRequest();
-				// progress bar
-				xhr.upload.addEventListener("progress",
-					function(e)
-					{
-						if (cancel_3dp)
-						{
-							xhr.abort();
-							return;
-						}					
-					
-						pbar.value=e.loaded / e.total;
-						if (pbar.value>0.99)
-						{
-							$id('pwait_txt').innerHTML="Sending file to 3D Printing service";
-							$id('c3dp').style.visibility='hidden'; //no rollback from here!
-							pbar.style.visibility='hidden';
-							$id('wtext').style.height="35px";
-						}
-					}
-				, false);
-					
-				// file received/failed
-				xhr.onreadystatechange =
-					function(e)
-					{
-						if (xhr.readyState == 4)
-						{
-							//alert(xhr.responseText);return;
-							pbar.value=1;
-							if (xhr.responseText.substr(0,2)=="OK")
-							{
-								window.location=xhr.responseText.substr(2);
-							}
-							else
-							{
-								if (!cancel_3dp) //if user canceled so that's no error. probably. doens't matter.
-									alert('Error preparing file for 3D Print');
-							}
-								
-							$id('pwait').style.display='none';
-						}
-					};
-					
-				// start upload
-				
-				xhr.open("POST", "/3dprint/prepare_3dp.php", true);
-				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhr.send("vf="+JSON.stringify(geo_to_vf(mesh.geometry))+"&target=treatstock"+"&units="+file_units+"&on="+model_filename);
-			}			
 						
 			
 			function do_resize()
 			{
 				var height = isNaN(window.innerHeight) ? window.clientHeight : window.innerHeight;
 				var width = isNaN(window.innerWidth) ? window.clientWidth : window.innerWidth;
-								height=Math.min(height,width-150);
-				$id('cjc').style.height=(height-220)+'px';
-				$id('cjc').style.width=(height-220)+'px';
-				$id('cjcwrap').style.height=(height-220)+'px';
-				$id('cjcwrap').style.width=(height-220)+'px';
-				$id('cjcdrag').style.top=((height-320)/2)+'px';
-				$id('cjcdrag').style.left=((height-570)/2)+'px';
-				$id('cjcpbar').style.top=((height-345)/2)+'px';
-				$id('cjcpbar').style.left=((height-570)/2)+'px';
-				$id('cjcproc').style.top=((height-345)/2)+'px';
-				$id('cjcproc').style.left=((height-570)/2)+'px';
+								height-=7;
+				width-=7;
+				$id('cjc').style.height=(height)+'px';
+				$id('cjc').style.width=(width)+'px';
+				$id('cjcwrap').style.height=(height)+'px';
+				$id('cjcwrap').style.width=(width)+'px';
+				$id('cjcdrag').style.top=((height-100)/2)+'px';
+				$id('cjcdrag').style.left=((width-350)/2)+'px';
+				$id('cjcpbar').style.top=((height-125)/2)+'px';
+				$id('cjcpbar').style.left=((width-350)/2)+'px';
+				$id('cjcproc').style.top=((height-125)/2)+'px';
+				$id('cjcproc').style.left=((width-350)/2)+'px';
+				
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				
 								
 				var rsize_width=$id("cjcwrap").getBoundingClientRect().width;
 				var rsize_height=$id("cjcwrap").getBoundingClientRect().height;
@@ -573,7 +481,7 @@
 				//renderer.setClearColor(bg_color, 0); //background
 				set_color(null, bg_color, true); //background
 				
-								$id("sel_orientation").selectedIndex=0; //front
+								set_orientation(orientation);
 				
 				scene.add(mesh);
 				mesh_is_ready=true;
@@ -602,14 +510,12 @@
 				model_filename=filename;
 				
 				
-								guess_file_units(xsize,ysize,zsize);
-				recalc_units();
-				
-				$id('ifilename').innerHTML=filename.substr(0,20);
-				$id('ifilename').style.visibility='visible';
-				
-				setTimeout(function(){$id('statswrap').style.width='280px';$id('statswrap').style.height='auto';}, 500);
 								
+								if (info_msg_source!=null)
+					post_info_message();
+					
+				if (photo_msg_source!=null)
+					setTimeout(function(){post_photo_message();}, 1500);
 								
 				//$id('cjcwrap').addEventListener('dragover', handleDragOver, false);
 				//$id('cjcwrap').addEventListener('drop', handleFileDrop, false);				
@@ -657,16 +563,6 @@
 					return;
 				}
 				
-								c = $id('cpal').getElementsByTagName("div");
-				
-				var i=c.length;	
-				while(i--)
-				{
-					if (c[i]==o)
-						c[i].style.border="2px solid #012101";
-					else
-						c[i].style.border="2px solid transparent";
-				}
 								
 				//mesh_color=o.style.background;
 				mesh_color=o_color;
@@ -783,84 +679,6 @@
 				imgform.submit();
 			}
 			
-						function setCookie(cname, cvalue, exdays)
-			{
-				var d = new Date();
-				d.setTime(d.getTime() + (exdays*24*60*60*1000));
-				var expires = "expires="+d.toUTCString();
-				document.cookie = cname + "=" + cvalue + "; " + expires;
-			}
-			
-			function getCookie(cname)
-			{
-				var name = cname + "=";
-				var ca = document.cookie.split(';');
-				for(var i=0; i<ca.length; i++) {
-					var c = ca[i];
-					while (c.charAt(0)==' ') c = c.substring(1);
-					if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
-				}
-				return "";
-			}			
-			
-			function guess_file_units(xsize,ysize,zsize)
-			{
-				//try to guess the file's units (mm or inch?)
-				if ((xsize<1)&&(ysize<1)&&(zsize<1))
-				{
-					file_units=2;
-					rin.checked=true;
-				}
-				else
-				{
-					file_units=1;
-					rmm.checked=true;
-				}
-			}
-			
-			function set_vol_and_size(vol,xsize,ysize,zsize)
-			{
-				var p=view_units==2?2:0;
-				$id('ivol').innerHTML=numberWithCommas(vol.toFixed(p));
-				$id('isize').innerHTML=numberWithCommas(xsize.toFixed(p))+' x '+numberWithCommas(ysize.toFixed(p))+' x '+numberWithCommas(zsize.toFixed(p));
-			}
-			
-			function save_stl()
-			{
-				if (waiting) return;
-				if (!mesh) return;
-				
-				var form = document.createElement("form");
-				form.setAttribute("method", "post");
-				form.setAttribute("action", "/general/save_stl.php");
-
-				var vf = document.createElement("input");
-				vf.setAttribute("type", "hidden");
-				vf.setAttribute("name", "vf");
-				vf.setAttribute("value", JSON.stringify(geo_to_vf(mesh.geometry)));
-				form.appendChild(vf);
-				
-				var on = document.createElement("input");
-				on.setAttribute("type", "hidden");
-				on.setAttribute("name", "on");
-				on.setAttribute("value", model_filename);
-				form.appendChild(on);
-				
-				var units = document.createElement("input");
-				units.setAttribute("type", "hidden");
-				units.setAttribute("name", "units");
-				units.setAttribute("value", file_units);
-				form.appendChild(units);
-				
-				var colored = document.createElement("input");
-				colored.setAttribute("type", "hidden");
-				colored.setAttribute("name", "colored");
-				colored.setAttribute("value", colored_model?1:0);
-				form.appendChild(colored);
-				
-				form.submit();
-			}
-			
 					</script>
 	</head>
 
@@ -868,36 +686,13 @@
 	
 		<input type="file" style="position:absolute; top:-150px;" id="fileselect" onchange="prepare_upload_file();">
 	
-				<header><h4>Welcome to the free online STL viewer!<br>View 3D STL files directly in your browser - no software installation is required.<br>We upload nothing to our server - everything is done client side.
-</h4></header>
-					<div style="width:100%;text-align:center;margin-bottom:10px;">
-					<!-- a href="/embed/" class="stitle" style="text-decoration:none;">* New - embed Viewstl.com in your own website!</a -->
-					<!-- a href="https://wordpress.org/plugins/wp-viewstl/" class="stitle" target="_blank" style="text-decoration:none;">Check Viewstl's WordPress plugin by <b>falldeaf</b>!</a><br -->
-				</div>
-				
-				
-				<div id="pwait" style="background: rgba(0,0,0,0.5);position: fixed;top: 0;right: 0;bottom: 0;left: 0;display:none;z-index:99999999;text-align:center;">
-					<div id="wtext" style="position:relative;margin:250px auto 0 auto;width:500px;height:80px;padding-top:10px;background:#EEEEEE;font:20px Arial;color:#343434;z-index: 99999;pointer-events: auto;border-radius:25px;">
-						<span id="pwait_txt">Preparing file for 3D Printing</span><br>
-						<span style="text-decoration:underline;cursor:pointer;" onclick="cancel_3dp=true;" id="c3dp">(cancel)</span><br>
-						<progress id="pbar_3dp" value="0" max="1"></progress>
-					</div>
-				</div>				
-				
 			
 		<div id="mainwrap" style="text-align:center;margin:0 auto;visibility:hidden;">
-			<div id="cjcwrap" style="position:relative;border:1px dashed #000000;background:#EEEEEE;display:inline-block;">
+			<div id="cjcwrap" style="position:relative;display:inline-block;">
 				<div id="cjcdrag" style="position:absolute;height:100px;width:350px;text-align:center;">
 										<span id="titlet1" style="font:20px Arial;color:#343434;">Drag & drop your STL file here</span><br>
 					<span id="titlet2" style="font:14px Arial;color:#3434AB;cursor:pointer;" onclick="if (waiting) return false;$id('fileselect').click();">or <u>browse your computer</u></span>
-															<div style="width:100%;text-align:center;margin:30px auto 0 auto;">
-						<div style="font:12px Arial;color:#5656AB;text-align:left;width:130px;margin:0 auto;">
-							<span style="width:60px;display:inline-block;">Example:</span> <span style="border-bottom: 1px dotted #3434AB;cursor:pointer;width:60px;" onclick="view_example('knot.stl');">Knot</span>
-							<br>
-							<span style="width:60px;display:inline-block;margin-top:7px;">Example:</span> <span style="border-bottom: 1px dotted #3434AB;cursor:pointer;width:60px;" onclick="view_example('android.obj');">Android</span>
-						</div>
-					</div>
-									</div>
+														</div>
 				
 				<div id="cjcpbar" style="display:none;position:absolute;height:50px;width:350px;text-align:center;">
 					<span id="pgt1" style="font:15px Arial;color:#343478;">Reading file ...</span><br>
@@ -908,50 +703,10 @@
 					<span id="prt1" style="font:15px Arial;color:#343478;">Processing ...</span><br>
 				</div>
 				
-				<div id="cjc" onmousedown="$id('rrotate2').checked=true;controls.autoRotate=false;" style="display:none;position:absolute;left:0px;top:0px;margin:0 auto;text-align:center;"></div>
-							</div>
+				<div id="cjc" onmousedown="controls.autoRotate=false;" style="display:none;position:absolute;left:0px;top:0px;margin:0 auto;text-align:center;"></div>
+				<a class="vslink" href="http://www.viewstl.com" target="_blank">Viewstl.com</a>			</div>
 		
-						<div id="statswrap" style="width:0px;height:0px;">
-				<div style="width:280px;overflow:hidden;">
-					<h1 id="ifilename" style="visibility:hidden;">_</h1>
-				
-					<div class="cinfo">
-						<h2>Model info</h2>
-						<table>
-							<tr style="vertical-align:bottom;">
-								<th>Size (<select id="suview" onchange="set_view_units(this.value);"><option value="1">mm</option><option value="2">in</option></select>)</th>
-								<td id="isize" style="width:50%;"></td>
-							</tr>
-							<tr>
-								<th>Volume (<span id="vunits">mm</span><sup>3</sup>)</th>
-								<td id="ivol" style="text-align:left;"></td>
-							</tr>
-							<tr>
-								<th>File units</th>
-								<td>
-									<input type="radio" id="rmm" onclick="set_file_units(1);" name="runits" value="0" checked>mm<br>
-									<input type="radio" id="rin" onclick="set_file_units(2);" name="runits" value="1">in<br>
-								</td>
-							</tr>
-						</table>
-					</div>
-					
-					
-					<div class="cinfo">
-						<h2>Options</h2>
-						<table>
-							<tr>
-								<th>Display</th>
-								<td>
-									<input type="radio" id="rshade1" onclick="set_shading(0);" name="rshade" value="0" checked>Flat Shading<br>
-									<input type="radio" id="rshade2" onclick="set_shading(1);" name="rshade" value="1">Smooth Shading<br>
-									<input type="radio" id="rshade3" onclick="set_shading(2);" name="rshade" value="2">Wireframe<br>
-								</td>
-							</tr>
-							<tr>
-								<th>Color</th>
-								<td id="cpal">
-																	<div class="cbar" id="black_color" onclick="set_color(this,'#000000');" style="background:#000000;"></div>
+							<div style="display:none;">									<div class="cbar" id="black_color" onclick="set_color(this,'#000000');" style="background:#000000;"></div>
 									<div class="cbar" id="white_color" onclick="set_color(this,'#FFFFFF');" style="background:#FFFFFF;"></div>
 									<div class="cbar" id="blue_color" onclick="set_color(this,'#0000FF');" style="background:#0000FF;"></div>
 									<div class="cbar" id="green_color" onclick="set_color(this,'#00FF00');" style="background:#00FF00;"></div>
@@ -963,69 +718,10 @@
 									<div class="cbar" id="purple_color" onclick="set_color(this,'#703487');" style="background:#703487;"></div>
 									<div class="cbar" id="darkblue_color" onclick="set_color(this,'#102075');" style="background:#102075;"></div>
 									<div class="cbar" id="brown_color" onclick="set_color(this,'#654321');" style="background:#654321;"></div>
-													
-												</td>
-							</tr>
+				</div>									
 							
-							<tr>
-								<th>Orientation</th>
-								<td>
-									<select id="sel_orientation" onchange="set_orientation(this.value);">
-										<option value="front">Front</option>
-										<option value="right">Right</option>
-										<option value="top">Top</option>
-										<option value="back">Back</option>
-										<option value="left">Left</option>
-										<option value="bottom">Bottom</option>
-									</select>
-								</td>
-							</tr>							
-							
-							<tr>
-								<th>Edges</th>
-								<td>
-									<input type="radio" id="redge1" onclick="set_edges(true);" name="redge" value="0">Yes<br>
-									<input type="radio" id="redge2" onclick="set_edges(false);" name="redge" value="1" checked>No<br>
-								</td>
-							</tr>
-							
-							<tr>
-								<th>Auto- rotation</th>
-								<td>
-									<input type="radio" id="rrotate1" onclick="controls.autoRotate=true;" name="rrotate" value="0" checked>Yes<br>
-									<input type="radio" id="rrotate2" onclick="controls.autoRotate=false;" name="rrotate" value="1">No<br>
-								</td>
-							</tr>
-						</table>
-					</div>
-
-					<div class="cinfo">
-						<h2>Actions</h2>
-						<div class="cact" onclick="open_img();"><span>Snap a picture</span></div>
-						<div>Check if print-ready (coming soon)</div>
-						<div style="margin-top:10px;margin-bottom:10px;" onclick="send_to_ts();"><span class="btn-ts">3D Print with Treatstock</span></div>
-						<div style="margin-top:20px;margin-bottom:10px;" onclick="save_stl();"><span class="btn-stc">Save to computer</span></div>
-					</div>
-
-					
-					<div style="width:100%;text-align:center;cursor:pointer;text-decoration:underline;color:#000055;" onclick="reset();">View another STL</div>
-						
-				</div>
-			</div>
-						
-				<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-		<!-- Standard -->
-		<ins class="adsbygoogle"
-			style="display:block"
-			data-ad-client="ca-pub-2715856240118156"
-			data-ad-slot="5879739624"
-			data-ad-format="auto"></ins>
-		<script>
-		(adsbygoogle = window.adsbygoogle || []).push({});
-		</script>
 						
 			
-						<div style="width:100%;text-align:center;margin-top:20px;"><h5>Powered by <a href="http://www.threejs.org/" target="_blank">three.js</a></h5></div>
 					</div>
 		
 		
@@ -1070,11 +766,110 @@
 				controls.update();
 			}			
 			
-						
-			var units_cookie=getCookie("units");
-			suview.value=units_cookie=="in"?2:1;
-			view_units=units_cookie=="in"?2:1;
-			$id("vunits").innerHTML=units_cookie=="in"?"in":"mm";
+						//handle messaging - relevant to embedded more only
+			var info_msg_source=null;
+			var info_msg_tag="";
+			var photo_msg_source=null;
+			var photo_msg_tag="";
+			window.onmessage = function(e)
+			{
+				if (e.data == 'info')
+				{
+					info_msg_source=e.source;
+					
+					//if mesh is ready - send info message right now. else, wait until the mesh is ready
+					if(mesh!=null)
+						post_info_message();
+				}
+				else if (e.data.hasOwnProperty('msg_type'))
+				{
+					var msg_type=e.data.msg_type.toLowerCase();
+					
+					switch (msg_type)
+					{
+						case 'get_info':
+							info_msg_source=e.source;
+							info_msg_tag=e.data.hasOwnProperty('tag')?e.data.tag:"";
+							//if mesh is ready - send info message right now. else, wait until the mesh is ready
+							if(mesh!=null)
+								post_info_message();						
+							break;
+							
+						case 'load':
+							if (e.data.hasOwnProperty('url'))
+								read_from_url(e.data.url);
+							else if (e.data.hasOwnProperty('file'))
+								upload_file(e.data.file);
+							else if (e.data.hasOwnProperty('local_url'))
+								download_from_local(e.data.local_url, e.data.local_url, true);
+							else
+								console.log('no url is defined');
+							break;
+							
+						case 'get_photo':
+							photo_msg_source=e.source;
+							photo_msg_tag=e.data.hasOwnProperty('tag')?e.data.tag:"";
+							//if mesh is ready - send info message right now. else, wait until the mesh is ready
+							if (mesh!=null)
+								post_photo_message();
+							break;
+							
+						case 'set_shading':
+							if (mesh!=null)
+							{
+								stype=e.data.hasOwnProperty('type')?e.data.type:"flat";
+								switch (stype.toLowerCase())
+								{
+									case "wireframe":
+										set_shading(2);
+										break;
+										
+									case "smooth":
+										set_shading(1);
+										break;
+										
+									default:
+										set_shading(0);
+								}
+								
+							}
+							break;
+							
+						case 'set_color':
+							if (mesh!=null)
+								set_color_by_name(e.data.hasOwnProperty('value')?e.data.value:"");
+							break;
+								
+						case 'set_bgcolor':
+							if (mesh!=null)
+								set_color_by_name(e.data.hasOwnProperty('value')?e.data.value:"", true);
+							break;
+							
+						case 'set_orientation':
+							set_orientation(e.data.hasOwnProperty('value')?e.data.value:"");
+							break;
+							
+						case 'set_edges':
+							if (mesh!=null)
+								set_edges(e.data.hasOwnProperty('value')?(e.data.value.toLowerCase()=="yes"):false);
+							break;							
+					}
+					
+				}				
+			};			
+			
+			function post_info_message()
+			{
+				if (info_msg_source==null) return;
+				info_msg_source.postMessage({msg_type:'info', tag:info_msg_tag, filename:model_filename, volume:vol, x:xsize, y:ysize, z:zsize, color:mesh_color, triangles:triangles_count, area:area}, '*');
+			}
+			
+			function post_photo_message()
+			{
+				if (photo_msg_source==null) return;
+				
+				photo_msg_source.postMessage({msg_type:'photo', tag:photo_msg_tag, img_data:renderer.domElement.toDataURL()}, '*');
+			}
 			
 						
 			//this function is being called from outside (from embedded page)
@@ -1107,7 +902,7 @@
 				controls.autoRotate=true;
 			else
 			{
-				 $id('rrotate2').checked=true; 				controls.autoRotate=false;
+								controls.autoRotate=false;
 			}
 			
 			animate();
@@ -1122,30 +917,36 @@
 			$id('cjcwrap').addEventListener('drop', handleFileDrop, false);
 		</script>
 		
-			
-		<footer>
-			<a href="/">ViewSTL</a>&nbsp;&nbsp;&nbsp;
-			<a href="/embed/">Embed</a>&nbsp;&nbsp;&nbsp;
-			<a href="/local_url/">Local files</a>&nbsp;&nbsp;&nbsp;
-			<a href="https://wordpress.org/plugins/wp-viewstl/" target="_blank">Wordpress Plugin</a>&nbsp;&nbsp;&nbsp;
-			<a href="/faq/">FAQ</a>&nbsp;&nbsp;&nbsp;
-			<a href="/tos/">Terms</a>&nbsp;&nbsp;&nbsp;
-			<a href="mailto:admin@viewstl.com">Contact</a>
-		</footer>	
-	
-	
+		
 		<script>
 			if (need_browser)
 				alert('Your browser is too old and is not supported by this website. Please install a modern browser (Chrome is recommended).');
 		</script>
 		
+						<script>
+					switch_view('pbar');
+											url_is_local=true;
+										read_from_url('https://meddata.clients.soton.ac.uk/data/lw6g10/SGH_SF_CT_002_TBL01B02_stl/SF2TBL01B02.stl');
+				</script>
+						
+						<script>
+									
 				
-				
-					
+					set_shading(0);
+				</script>
+						
+						<script>
+										
+					controls.autoRotate=false;
+				</script>
+							
 		
-				
-				
-				
+									<script>$id('white_color').onclick();</script>
+								
+									<script>set_color_by_name('black', true);</script>
+								
+									<script>set_orientation('bottom');</script>
+								
 					
 		
 		<script>setTimeout(function(){$id('mainwrap').style.visibility='visible';}, 200);</script>
