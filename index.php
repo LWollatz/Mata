@@ -3,6 +3,7 @@
 <?php
 /*<!--php-->*/
 include "_LayoutDatabase.php";
+include "_SecurityCheck.php";
 /* Query SQL Server for the data */   
 $tsql = "SELECT TOP 1000 [ID]
       ,[Name]
@@ -10,7 +11,8 @@ $tsql = "SELECT TOP 1000 [ID]
       ,[Description]
       ,[DefaultBasePath]
   FROM [MEDDATADB].[dbo].[Experiments]
-  WHERE [ExperimentTypeID] = 0";
+  WHERE [ExperimentTypeID] = 0
+  AND [IsDeleted] = 0";
 $stmt = sqlsrv_query( $conn, $tsql);  
 if( $stmt === false )  
 {  
@@ -35,18 +37,10 @@ include "_LayoutHeader.php";
 ?> 
 <div id="content">
 	All datasets<br/>
-	<ul class="fa-ul li-def">
-		<?php
-		/* Retrieve and display the results of the query. */
-		while($row = sqlsrv_fetch_array($stmt)) {
-			$description = $row['Description'];
-			if (strlen($description) > 40){
-				$description = substr($description,0,37)."...";
-			}
-			echo "<li><i class=\"fa-li fa fa-circle-o\"></i><a href=\"view.php?imgID=".$row['ID']."\" >".$row['Name']."</a></br><i>".$description."</i></li>";
-		}
-		?>
-	</ul>
+	<?php 
+	$experiments = $stmt;
+	include "App_Data/ListExperiments.php";
+	?>
 </div>
 
 <!--footer-->

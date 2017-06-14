@@ -31,7 +31,7 @@
 <h2>How to connect:</h2>
 requires VPN to soton.ac.uk
 <h3>Connect to website</h3>
-open http://meddata.clients.soton.ac.uk in a browser
+open https://meddata.clients.soton.ac.uk in a browser
 <h3>Connect to filestore</h3>
 <ol>
 	<li>If not on university network, connect via VPN</li>
@@ -58,15 +58,18 @@ open http://meddata.clients.soton.ac.uk in a browser
 	<li>Add new datasets in separate folders inside the folder with your username on this drive</li>
 </ol>
 
+<!--<?php var_dump($_SERVER); ?>-->
+
 <h2>Software used</h2>
 <ul class="tree fa-ul">
 	<li class="tree"><i class="fa fa-fw fa-windows"></i>Windows Server 2012 R2 Standard Evaluation</li>
 	<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://fontawesome.io/examples/">Heterogeneous Data Center</a> filewatcher</li>
 	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the website
 		<ul class="tree fa-ul">
-			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft IIS</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><?php echo $_SERVER["SERVER_SOFTWARE"]; ?></li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft SQL Server</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>MCTV</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.viewstl.com">viewstl</a></li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>PHP <?php echo phpversion(); ?></li><!-- phpinfo(); -->
 			<li class="tree"><i class="fa fa-fw fa-html5"></i>HTML 5</li>
 			<li class="tree"><i class="fa fa-fw fa-css3"></i>CSS 3</li>
@@ -84,7 +87,7 @@ open http://meddata.clients.soton.ac.uk in a browser
 		</ul>
 	</li>
 </ul>
-
+<br/>
 <!--<?php phpinfo(); ?>-->
 </div>
 <?php include "_LayoutFooter.php";?>

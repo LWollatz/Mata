@@ -10,4 +10,4 @@
 <title><?php echo $PageTitle;?></title>
 <link rel="icon" 
       type="image/ico" 
-      href="http://meddata.clients.soton.ac.uk/favicon.ico"/>
+      href="/favicon.ico"/>

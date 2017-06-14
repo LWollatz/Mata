@@ -71,7 +71,7 @@ var mLeft;                      //current left position of image relative to vie
 var gImageWidth, gImageHeight;  //width and height of image
 var width, height;              //width and height of specific slice images
 /*resolution/dimension*/
-var resunits = "&mu;m";         //units of the resolution factors
+var resunits = "px";            //units of the resolution factors
 var res = 1.0;                  //size of 1 pixel (resunits/px)
 var zres = 1.0;                 //thickness of 1 slice (resunits/slice)
 var JSONnum;                    //number of images (z dimension size)
@@ -85,6 +85,7 @@ var thresLower;                 //Lower Threshold
 var thresUpper;                 //Upper Threshold
 var densmin = -1000;            //HU of minimum value (0)
 var densmax = 1000;             //HU of maximum value (255)
+var densunit = "N/A";           //density unit (e.g. HU)
 /*mouse movement*/
 var clickmode = 0;              //mode for mouse click/ drag
 var lasteventX = 0;             //X coordiante from last known mouse movement
@@ -217,6 +218,8 @@ function engUnit(number,unit){
         unitlevel = -1;
     }else if (unit === "km"){
         unitlevel = 3;
+    }else if (unit === "px"){
+        unitlevel = 0;
     }
     //get to next best unit
     while(Math.abs(value) < 0.1 && unitlevel > -9){
@@ -235,21 +238,35 @@ function engUnit(number,unit){
         unitlevel -= 1;
     }
     //return string representation
-    if (unitlevel == -9){
-        unit = "nm";
-    }else if (unitlevel == -6){
-        unit = "&mu;m";
-    }else if (unitlevel == -3){
-        unit = "mm";
-    }else if (unitlevel == -2){
-        unit = "cm";
-    }else if (unitlevel == -1){
-        unit = "dm";
-    }else if (unitlevel == 0){
-        unit = "m";
-    }else if (unitlevel == 3){
-        unit = "km";
-    }
+	if (unit != "px"){
+		if (unitlevel == -9){
+			unit = "nm";
+		}else if (unitlevel == -6){
+			unit = "&mu;m";
+		}else if (unitlevel == -3){
+			unit = "mm";
+		}else if (unitlevel == -2){
+			unit = "cm";
+		}else if (unitlevel == -1){
+			unit = "dm";
+		}else if (unitlevel == 0){
+			unit = "m";
+		}else if (unitlevel == 3){
+			unit = "km";
+		}
+	}else{
+		if (unitlevel == -9){
+			unit = "e-9 px";
+		}else if (unitlevel == -6){
+			unit = "e-6 px";
+		}else if (unitlevel == -3){
+			unit = "e-3 px";
+		}else if (unitlevel == 0){
+			unit = "px";
+		}else if (unitlevel == 3){
+			unit = "e+3 px";
+		}
+	}
     return Math.round(value*100)/100 + " " + unit;
 }
 
@@ -923,6 +940,9 @@ function updateThreshold() {
     thressliderdiv = document.getElementById('thresslider');
     thressliderdiv.innerHTML = thresstr;
     thressliderdiv.onmouseup = clickThreshold;
+	
+	thresunit = document.getElementById('densunit');
+    thresunit.innerHTML = densunit;
 }
 
 function clickThreshold(event) { 
@@ -1146,6 +1166,22 @@ function centreView() {
     } else {
         innerDiv.style.top =  - (height / (Math.pow(2, gTierCount - 1 - zoom) / xtrazoom)) / 2 + viewportHeight / 2 + 'px';
     }
+}
+
+function clickOverlay() { 
+/*on Mouse Click Show/Hide the overlay
+ */
+    //var overlay = document.getElementById('overlay');
+    if ($("#overlay").hasClass("display")) {
+        $("#overlay").removeClass('display');
+		$("#overlaynav").removeClass('fa-chevron-left');
+		$("#overlaynav").addClass('fa-chevron-right');
+		
+    }else{
+		$("#overlay").addClass('display');
+		$("#overlaynav").removeClass('fa-chevron-right');
+		$("#overlaynav").addClass('fa-chevron-left');
+	}
 }
 
 
@@ -1508,6 +1544,7 @@ function JSONread() {
 			 
             densmin = getJSONAttribute("densmin", JSONout, densmin);
             densmax = getJSONAttribute("densmax", JSONout, densmax);
+			densunit = getJSONAttribute("densunit", JSONout, densunit);
             thresLower = Math.max(densmin, thresLower);
             thresUpper = Math.min(densmax, thresUpper);
 
@@ -2037,6 +2074,14 @@ function startup() {
     if (resunits.length <= 0) {
         resunits = "px";
     }
+	
+	/* unit for the density */
+    densunit2 = getVar('densunit');
+    if (densunit2.length > 0)
+        densunit = densunit2;
+    if (densunit.length <= 0) {
+        densunit = "N/A";
+    }
 
     imgpath = path;
 
@@ -2128,11 +2173,17 @@ function startup() {
      * browsers animations aren't supported so the
      * panel will be off screen and never appear
      */
-    setTimeout(function () {
+    /*setTimeout(function () {
         $("#overlay").animate({
-            left : "0px"
+            left : "-200px"
         }, 1500, "swing");
-    }, 1500);
+    }, 1500);*/
+	
+	/*setTimeout(function () {
+        $("#overlay").animate({
+            top : "100px"
+        }, 1500, "swing");
+    }, 1500);*/
 
     // console.timeStamp("startup end");
     
@@ -2186,6 +2237,9 @@ function initOnclicks() {
     document.getElementById("zoominiconfa").onmouseup = zoomIn;
     document.getElementById("slicepreviconfa").onmouseup = slicePrevDef;
     document.getElementById("slicenexticonfa").onmouseup = sliceNextDef;
+	
+	document.getElementById("overlaybtn").onclick = clickOverlay;
+	
 }
 
 

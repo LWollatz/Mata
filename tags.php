@@ -3,6 +3,7 @@
 <?php
 /*<!--php-->*/
 include "_LayoutDatabase.php";
+include "_SecurityCheck.php";
 /* Query SQL Server for the data */   
 $tsql = "SELECT [Name], [Value], COUNT(*) AS Count
   FROM [MEDDATADB].[dbo].[ExperimentParameters]

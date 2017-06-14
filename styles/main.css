@@ -233,18 +233,24 @@ div.metadata {
 }
 div.metadata.fw {
   width: 30%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 div.metadata:hover {
   width: 30%;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: calc(100vh - 95px);
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
+
 div.datacontent {
   /*margin-left: 155px;*/
   overflow: hidden;
   clear: right;
   margin-bottom: -10px;
+  background-color: #000000;
 }
 div.datacontent iframe {
   width: 100%;
@@ -313,6 +319,7 @@ div.files {
   padding: 5px 5px 5px 5px;
   margin: 5px 5px 5px 5px;
   display: inline-block;
+  float: left;
 }
 .inpdesc {
   padding: 2px 5px 0px -5px;
@@ -368,6 +375,20 @@ div.files {
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
+div.container {
+  float: left;
+  margin: 10px 10px 10px 10px;
+  border: 1px dotted #266c8e;
+  min-width: 30%;
+}
+
+li.li2 {
+	color: #d4d4d4;
+}
+li.li2 a{
+	color: #d4d4d4;
+}
+
 .theader {
   font-weight: bold;
 }

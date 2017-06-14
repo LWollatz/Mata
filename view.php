@@ -6,12 +6,25 @@ include "_LayoutDatabase.php";
 /* get variables */
 $imageID = (int)$_GET['imgID'];
 
+include "_SecurityCheck.php";
+if($authstage == "None"){
+	$ErrorMsg = $ErrorMsg."You must be logged in to view datasets";
+	header($_SERVER["SERVER_PROTOCOL"]." 401 Unauthorized");
+	header("Location: /error.php?errcode=401");
+}
+/*if($authstage == "Basic"){
+	$ErrorMsg = $ErrorMsg."You do not have permission to view this dataset";
+	header("HTTP/1.1 403 Forbidden");
+}*/
+
+
+
 /* Query SQL Server for the login of the user accessing the  
 database. */   
 $isql = "SELECT TOP 1 *
   FROM [MEDDATADB].[dbo].[Experiments]
-  WHERE [ID] = @1";
-$isql = str_replace("@1", $imageID, $isql);
+  WHERE [ID] = ?";
+//$isql = str_replace("@1", $imageID, $isql);
 
 $osql = "SELECT TOP 1 [MEDDATADB].[dbo].[Users].[ID]
       ,[MEDDATADB].[dbo].[Users].[Username]
@@ -32,14 +45,33 @@ $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
   WHERE [ExperimentID] = ? 
   AND [IsDeleted] = 0 
-  AND NOT [Filename] LIKE '%.jpg'
-  ORDER BY [BasePath]";
+  AND NOT [Filename] LIKE '%.tif'
+  ORDER BY [Filename]";
+  
+$epsql = "SELECT [ParentExperimentID] AS [ExperimentID]
+      ,[LinkedExperimentID]
+      ,[Name]
+  FROM [MEDDATADB].[dbo].[ExperimentLinks]
+  LEFT JOIN [MEDDATADB].[dbo].[Experiments] 
+  ON [MEDDATADB].[dbo].[ExperimentLinks].[ParentExperimentID] = [MEDDATADB].[dbo].[Experiments].[ID]
+  WHERE [LinkedExperimentID] = ?";
+  
+$ecsql = "SELECT [ParentExperimentID] 
+      ,[LinkedExperimentID] AS [ExperimentID]
+      ,[Name]
+  FROM [MEDDATADB].[dbo].[ExperimentLinks]
+  LEFT JOIN [MEDDATADB].[dbo].[Experiments] 
+  ON [MEDDATADB].[dbo].[ExperimentLinks].[LinkedExperimentID] = [MEDDATADB].[dbo].[Experiments].[ID]
+  WHERE [ParentExperimentID] = ?";
 
 
-$srinfo = sqlsrv_query( $conn, $isql);
+
+$srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
 $srtags = sqlsrv_query( $conn, $tsql); 
 $srfiles = sqlsrv_query( $conn, $fsql, array(&$imageID));
 $srowner = sqlsrv_query( $conn, $osql, array(&$imageID));
+$srparents = sqlsrv_query( $conn, $epsql, array(&$imageID));
+$srchilds = sqlsrv_query( $conn, $ecsql, array(&$imageID));
 if( $srtags === false )  
 {  
      echo "Error in executing query.</br>";  
@@ -49,9 +81,27 @@ if( $srtags === false )
 $row = sqlsrv_fetch_array($srinfo);
 $owner = sqlsrv_fetch_array($srowner);
 
+/*Check if normal Experiment (not config data)*/
+if($row["ExperimentTypeID"] != 0){
+	$errmsg = $errmsg."Invalid ID ";
+	header('Location: http://meddata.clients.soton.ac.uk/error.php?msg='.$infomsg.'&err='.$errmsg);
+}
+
+
+
 /*get relative path for files*/
 $relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
 $relpath = str_replace("\\", "/", $relpath);
+
+$hasPreview = false;
+$hasSTL = false;
+if(file_exists($relpath."/.previews/infoJSON.txt")){
+	$hasPreview = true;
+}
+if(file_exists($relpath."/.previews/infoSTL.txt")){
+	$hasSTL = true;
+}
+
 ?>
 <head>
 	<!--metadata-->
@@ -68,13 +118,15 @@ $relpath = str_replace("\\", "/", $relpath);
 <body>
 
 <?php 
-$MenuEntries = '<a href="edit.php?imgID='.$imageID.'"><i class="fa fa-edit"></i> Edit</a>';
+if($authstage == "Owner" || $authstage == "Writer" ){
+	$MenuEntries = '<a href="edit.php?imgID='.$imageID.'"><i class="fa fa-edit"></i> Edit</a>';
+}
 include "_LayoutHeader.php"; 
 ?> 
 
 <div id="content">
 
-<?php if( file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<?php if( ($hasPreview || $hasSTL) && $authstage != "Basic" ){ ?>
 <div class="metadata">
 <?php }else{ ?>
 <div class="metadata fw">
@@ -84,7 +136,7 @@ include "_LayoutHeader.php";
 echo "<b>Name:</b> ".$row['Name']."<br/>";
 echo "<b>Date:</b> ".$row['Date']->format("d/m/Y H:i:s")."<br/>";
 echo "<b>Description:</b> <i>".$row['Description']."</i><br/>";
-echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>";
+echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>"; //." - you are ".$authstage."<br/>";
 ?>
 <i class="fa fa-tags"></i> <b>Tags:</b> 
 <ul class="fa-ul" style="margin-top:0px;">
@@ -95,82 +147,38 @@ while($tag = sqlsrv_fetch_array($srtags)) {
 }
 ?>
 </ul>
-<?php if( !file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<?php if( !$hasPreview && !$hasSTL || $authstage == "Basic"){ ?>
 </div>
 <div class="files">
 <?php } ?>
 
 <i class=" fa fa-files-o"></i> <b>Files:</b>
-<ul class="tree fa-ul">
-<?php
-/* Retrieve and display the results of the query. */
-$savedparts = array();
-while($file = sqlsrv_fetch_array($srfiles)) {
-	$fileparts = explode('.',$file['Filename']);
-	$fileending = end($fileparts);
-	if (strpos(".tif.tiff.bmp.png.jpg", $fileending) === FALSE){
-		$filepath = str_replace("c:\\", "//meddata.clients.soton.ac.uk/", $file['BasePath']);
-		$filepath = str_replace("\\", "/", $filepath);
-		$fileendpath = str_replace("\\", "/", $file['Filename']);
-		//echo $fileendpath;
-		$fileparts = explode('/',$fileendpath);
-		$filename = end($fileparts);
-		$curparts = $fileparts;
-		array_splice($curparts, sizeof($curparts)-1, 1);
-		
-		//echo count($fileparts).",".sizeof($fileparts);
-		
-		//echo "<li>".$curparts[0]."</li>";
-		if ($curparts != $savedparts){
-			while (sizeof($savedparts)>sizeof($curparts) && sizeof($savedparts) >= 0){
-			  echo "</ul></li>";
-			  array_splice($savedparts, -1, 1);
-			}
-			$cntr = sizeof($savedparts)-1;
-			while (($cntr >= 0) && ($savedparts[$cntr] != $curparts[$cntr])){
-			  echo "</ul></li>";
-			  $cntr = $cntr - 1;
-			}
-			$cntr = $cntr + 1;
-			while ($cntr < sizeof($curparts)){
-			  echo "<li class=\"tree\"><i class=\"fa fa-folder fa-fw\"></i> ".$curparts[$cntr];
-			  echo "<ul class=\"tree fa-ul\">";
-			  $cntr = $cntr + 1;
-			}
-		}
-		
-		$filetype = "fa-file-o";
-		if (strpos(".txt", $fileending) !== FALSE){
-			$filetype = "fa-file-text-o";
-		}
-		if (strpos(".js.json.php.c.cpp.h.xml", $fileending) !== FALSE){
-			$filetype = "fa-file-code-o";
-		}
-		if (strpos(".doc.docx.rtf", $fileending) !== FALSE){
-			$filetype = "fa-file-word-o";
-		}
-		if (strpos(".pdf", $fileending) !== FALSE){
-			$filetype = "fa-file-pdf-o";
-		}
-		$filetype = "<i class=\"fa fa-fw ".$filetype."\"></i>";
-		if (strpos(".vol.raw", $fileending) !== FALSE){
-			$filetype = "<span class=\"fa-fw fa-stack fa-1x\" style=\"font-size:50%;\"><i class=\"fa fa-fw fa-file-o fa-stack-2x\"></i><i class=\"fa fa-fw fa-cubes fa-stack-1x\"></i></span>";
-		}
-		echo "<li class=\"tree\">".$filetype." <a href=\"".$filepath."/".$fileendpath."\">".$filename."</a></li>";
-		
-		$savedparts = $curparts;
-	}
-}
-while (sizeof($savedparts)>1){
-	echo "</ul></li>";
-	array_splice($savedparts, -1, 1);
-}
-?>
+<?php include "App_Data/ListFiles.php"; ?>
+<br/>
+<i class=" fa fa-link"></i> <b>Related Datasets:</b><br/>
+<ul class="fa-ul" style="margin-top:0px;">
+<li><i><a href="../netgraph.php?imgID=<?php echo $imageID;?>">(view network)</a></i></li>
+<?php while($item = sqlsrv_fetch_array($srparents)) {
+    echo "<li><i class=\"fa-li fa fa-male\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
+}?>
+<?php while($item = sqlsrv_fetch_array($srchilds)) {
+    echo "<li><i class=\"fa-li fa fa-child\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
+}?>
 </ul>
 </div>
-<?php if(file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<?php if($hasPreview && $authstage != "Basic"){ ?>
 <div class="datacontent">
 <iframe src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
+</iframe>
+</div>
+<?php } ?>
+<?php if($hasSTL && $authstage != "Basic"){ 
+	$abspath = str_replace("../", "https://meddata.clients.soton.ac.uk/", $relpath);
+	$string = file_get_contents($relpath."/.previews/infoSTL.txt");
+	$stlfiles = explode("\n",$string);
+?>
+<div class="datacontent">
+<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
 </iframe>
 </div>
 <?php } ?>

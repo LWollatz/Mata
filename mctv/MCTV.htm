@@ -9,11 +9,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>3D CT Viewer</title>
 <!--style-->
-<link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <link rel="stylesheet" href="MCTV.css" type="text/css">
 <!--javascript-->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="MCTV.js" type="text/javascript"></script>
 <!-- end head-->
@@ -56,7 +56,7 @@
 <!--Scale-->
 			<div style="position:fixed; bottom:25px; left:250px; font-size:14px; text-align:center;">
 				<hr id="scale" style="width:50px;">
-				<div id="theScale"  class="rulerlbl"></div><br>
+				<div id="theScale"  class="scalelbl"></div><br>
 			</div>
 <!--University of Southampton Logo-->
 			<div style="position:fixed; top:25px; right:25px; width:30%; max-width:200px;">
@@ -68,7 +68,10 @@
 		</div>
 		
 <!--Toolbox-->
-		<div id="overlay" style="top:145px; left:-250px; width:220px;">
+		
+		
+		<div id="overlay" class="display" style="top:100px; width:220px;">
+			<div id="overlaybtn" class="icon right"><span id="overlaynav" class="fa fa-chevron-left"></span></div>
 			<br/>
 			<div id="zoom">
 				<div class="zoom icon left">
@@ -103,7 +106,7 @@
 			</div><br/><br/>
 			
 			<div id="thres">
-				<b>&nbsp;Density Range</b> (unit N/A)<b>:</b><br/>
+				<b>&nbsp;Density Range</b> (unit <i id="densunit">N/A</i>)<b>:</b><br/>
 				<div class="thres slider" id="thresslider"></div>
 			</div><br/>
 			
@@ -150,6 +153,8 @@
 			<div class="debug" id="debug2"></div>
 			<div class="debug" id="debug3"></div>
 		</div>
+		
+		
 		
 <!--Thumbnails-->
 		<div class="thumbnail" id="Thumb0" style="bottom:10px; right:10px;">

@@ -4,12 +4,18 @@
 			<a href="index.php"><i class="fa fa-home"></i> Home</a>
 			<a href="tags.php"><i class="fa fa-tags"></i> Tags</a>
 			<a href="info.php"><i class="fa fa-info"></i> Info</a>
-			<?php echo $MenuEntries; ?>
+			<?php if (isset($MenuEntries)){ echo $MenuEntries; }?>
+			<!--<?php if (isset($imageID)){ ?>
+				<a href="clean.php?ID=<?php echo $imageID; ?>"><i class="fa fa-recycle"></i></a>
+			<?php }else{ ?>
+				<a href="clean.php"><i class="fa fa-recycle"></i></a>
+			<?php } ?>-->
+			<?php if($_SERVER["AUTH_USER"] != ""){?> <a><i class="fa fa-user"></i> <?php echo str_replace("THEMEDDATA\\","",$_SERVER["AUTH_USER"]); ?></a><?php } ?>
 			<input name="utf8" type="hidden" value="&#x2713;" />
 			<button type="submit" class="btn btn-search search">
 				<i class="fa fa-search"></i>
 			</button>
-			<input type="text" name="sphrase" class="search" value="" placeholder="Search.."/>
+			<input type="text" name="sphrase" class="search" value="<?php echo $searchphrase;?>" placeholder="Search.."/>
 	</form>
 </div>
 

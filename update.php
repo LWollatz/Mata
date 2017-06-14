@@ -4,7 +4,18 @@
     {   
         die( print_r( sqlsrv_errors(), true));  
     }
-    
+	$imageID = (int)$_POST["ID"];
+	include "_SecurityCheck.php";
+	if($authstage != "Owner" && $authstage != "Writer"){
+		$errmsg = $errmsg."Access Denied!";
+		$infomsg = $infomsg.$authuser['Username'].$authstage;
+		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+	}
+/*echo $_POST['Save'];
+echo $_POST['Link'];
+echo $_POST['Un-Link'];*/
+
+if($_POST['Save']){
     /*get basic post results*/
     $imageID = (int)$_POST["ID"];
     $ud_description = $_POST["ud_description"];
@@ -63,7 +74,7 @@
     {
         echo "Error in executing statement.\n";
 	    $errmsg = $errmsg."error in executing statement<br/>";
-        header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+        header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
         die( print_r( sqlsrv_errors(), true));
     }
 
@@ -97,7 +108,7 @@
 			{
 				echo "Error in executing statement.\n";
 				$errmsg = $errmsg."error in executing statement<br/>";
-				header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+				header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 				die( print_r( sqlsrv_errors(), true));
 			}
 		}else{
@@ -119,7 +130,7 @@
 			{
 				echo "Error in executing statement.\n";
 				$errmsg = $errmsg."error in executing statement<br/>";
-				header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+				header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 				die( print_r( sqlsrv_errors(), true));
 			}
 		}
@@ -145,7 +156,7 @@
 		{
 			echo "Error in executing statement.\n";
 		    $errmsg = $errmsg."error in executing statement<br/>";
-			header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
     }
@@ -165,6 +176,218 @@
 	}
 
 
-    header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+    header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+}else if($_POST['Link']){
+	$imageID = (int)$_POST["ID"];
+	$parentID = (int)$_POST["OriID"];
+	
+	$queryln="INSERT INTO [MEDDATADB].[dbo].[ExperimentLinks]
+      ( [ParentExperimentID], [LinkedExperimentID] )   
+      VALUES (?, ?)";
 
+    $errmsg = "";
+    $infomsg = "";
+	
+	
+	/***INSERT NEW TAG***/
+    if( $parentID != 0){
+		$insertLink = sqlsrv_prepare( $conn, $queryln, array( &$parentID, &$imageID));
+		if( sqlsrv_execute( $insertLink ))
+		{
+			if( sqlsrv_rows_affected( $insertLink ) > 0)
+			{
+				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertLink );
+				$infomsg = $infomsg."Link added. (rows affected: ".sqlsrv_rows_affected( $insertLink ).")<br/>";
+			}
+			else
+			{
+				echo "Statement executed but no rows changed.\n <br />";
+				$errmsg = $errmsg."No changes made<br/>";
+			}
+		}
+		else
+		{
+			echo "Error in executing statement.\n";
+		    $errmsg = $errmsg."error in executing linking statement<br/>";
+			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			die( print_r( sqlsrv_errors(), true));
+		}
+    }
+	
+	
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+
+	
+}else if($_POST['Un-Link']){
+	$imageID = (int)$_POST["ID"];
+	$parentID = (int)$_POST['Un-Link'];
+	
+	$queryld="DELETE FROM [MEDDATADB].[dbo].[ExperimentLinks]
+      WHERE [ParentExperimentID]= ? 
+	  AND [LinkedExperimentID] = ?";
+
+    $errmsg = "";
+    $infomsg = "";
+	
+	
+	$deleteLink = sqlsrv_prepare( $conn, $queryld, array( &$parentID, &$imageID));
+	if( sqlsrv_execute( $deleteLink ))
+	{
+		if( sqlsrv_rows_affected( $deleteLink ) > 0)
+		{
+			echo "Link to ".$parentID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
+			$infomsg = $infomsg."Link to ".$parentID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
+		}
+		else
+		{
+			echo "Statement executed but no rows changed.\n <br />";
+			$errmsg = $errmsg."No changes made to link<br/>";
+		}
+	}
+	else
+	{
+		echo "Error in executing statement.\n";
+		$errmsg = $errmsg."error in executing un-linking statement<br/>";
+		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		die( print_r( sqlsrv_errors(), true));
+	}
+	
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+
+	
+}else if($_POST['Import']){
+	$imageID = (int)$_POST["ID"];
+	$parentID = (int)$_POST['Import'];
+	
+	$queryli="SELECT [Name],[Value],[Unit],[Type]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  WHERE [ExperimentID] = ?
+  AND NOT [Name] = ANY (
+    SELECT [Name]
+    FROM [MEDDATADB].[dbo].[ExperimentParameters]
+    WHERE [ExperimentID] = ? )";
+	
+	$queryta="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameters]
+      ( [ExperimentID], [Name], [Value] ,[Unit], [Type] )   
+      VALUES (?, ?, ?, ?, ?)";
+	  
+	//$options = array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
+	
+    $errmsg = "";
+    $infomsg = "";
+	
+	//echo $queryli;
+	$newtags = sqlsrv_query( $conn, $queryli, array( &$parentID, &$imageID));
+	//echo "results ".sqlsrv_num_rows($newtags);
+	
+	while($tag = sqlsrv_fetch_array($newtags)) {
+		$addTag = sqlsrv_prepare( $conn, $queryta, array( &$imageID, &$tag['Name'], &$tag['Value'], &$tag['Unit'], &$tag['Type']),$options);
+		if( sqlsrv_execute( $addTag ))
+		{
+			if( sqlsrv_rows_affected( $addTag ) > 0)
+			{
+				echo "Tag from ".$parentID." added.\n <br />".sqlsrv_rows_affected( $addTag );
+				$infomsg = $infomsg."Tag from ".$parentID." added. (rows affected: ".sqlsrv_rows_affected( $addTag ).")<br/>";
+			}
+			else
+			{
+				echo "Statement executed but no rows changed.\n <br />";
+				$errmsg = $errmsg."No changes made to tags<br/>";
+			}
+		}
+		else
+		{
+			echo "Error in executing statement.\n";
+			$errmsg = $errmsg."error in executing tag importing statement<br/>";
+			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			die( print_r( sqlsrv_errors(), true));
+		}
+	}
+	
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+
+	
+}else if($_POST['UsrAdd']){
+	$imageID = (int)$_POST["ID"];
+	$userID = (int)$_POST["NewUSRID"];
+	echo $userID;
+	
+	$queryau="INSERT INTO [MEDDATADB].[dbo].[UserAccess]
+      ( [ExperimentID], [UserID], [WriteAccessGranted] )   
+      VALUES (?, ?, 1)";
+
+    $errmsg = "";
+    $infomsg = "";
+	
+	
+	/***INSERT NEW USER***/
+    if( $userID != 0){
+		$insertUser= sqlsrv_prepare( $conn, $queryau, array( &$imageID, &$userID));
+		if( sqlsrv_execute( $insertUser ))
+		{
+			if( sqlsrv_rows_affected( $insertUser ) > 0)
+			{
+				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertUser );
+				$infomsg = $infomsg."User added. (rows affected: ".sqlsrv_rows_affected( $insertUser ).")<br/>";
+			}
+			else
+			{
+				echo "Statement executed but no rows changed.\n <br />";
+				$errmsg = $errmsg."No changes made<br/>";
+			}
+		}
+		else
+		{
+			echo "Error in executing statement.\n";
+		    $errmsg = $errmsg."error in adding user statement<br/>";
+			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			die( print_r( sqlsrv_errors(), true));
+		}
+    }
+	
+	
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+
+	
+}else if($_POST['UsrDel']){
+	$imageID = (int)$_POST["ID"];
+	$userID = (int)$_POST['UsrDel'];
+	
+	$queryud="DELETE FROM [MEDDATADB].[dbo].[UserAccess]
+      WHERE [UserID]= ? 
+	  AND [ExperimentID] = ?";
+
+    $errmsg = "";
+    $infomsg = "";
+	
+	
+	$deleteLink = sqlsrv_prepare( $conn, $queryud, array( &$userID, &$imageID));
+	if( sqlsrv_execute( $deleteLink ))
+	{
+		if( sqlsrv_rows_affected( $deleteLink ) > 0)
+		{
+			echo "Link to ".$userID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
+			$infomsg = $infomsg."Link to ".$userID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
+		}
+		else
+		{
+			echo "Statement executed but no rows changed.\n <br />";
+			$errmsg = $errmsg."No changes made to link<br/>";
+		}
+	}
+	else
+	{
+		echo "Error in executing statement.\n";
+		$errmsg = $errmsg."error in executing un-linking statement<br/>";
+		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		die( print_r( sqlsrv_errors(), true));
+	}
+	
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+
+	
+}else{
+	$errmsg = "something went wrong";
+	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);
+}
 ?>

@@ -2,6 +2,7 @@
 header('Content-Type:text/html; charset=UTF-8');
 $ErrorMsg = "";
 $InfoMsg = "";
+$searchphrase = "";
 $serverName = "MEDDATA"; //serverName\instanceName
 $connectionInfo = array( "Database"=>"MEDDATADB" );
 /* Connect using Windows Authentication. */  

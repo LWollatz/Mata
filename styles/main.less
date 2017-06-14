@@ -224,9 +224,13 @@ div.metadata {
 	.defaulttransition;
     &.fw {
 	    width: 30%;
+		overflow-x: hidden;
+		overflow-y: auto;
 	}
 	&:hover {
 		width: 30%;
+		overflow-x: hidden;
+		overflow-y: auto;
 		min-height: ~"calc(100vh - 95px)";
 		.defaulttransition;
 	}
@@ -236,6 +240,7 @@ div.datacontent {
 	overflow: hidden;
 	clear: right;
 	margin-bottom: -10px;
+	background-color: @black;
 	iframe {
 		width: 100%;
 		height: ~"calc(100vh - 90px)";
@@ -300,6 +305,7 @@ div.files {
 	padding: 5px 5px 5px 5px;
 	margin: 5px 5px 5px 5px;
 	display: inline-block;
+	float: left;
 }
 .inpdesc {
 	padding: 2px 5px 0px -5px;
@@ -349,6 +355,12 @@ div.files {
 		border: 3px solid @blue;
 		padding: 0px 3px;
 		.defaulttransition;
+	}
+}
+li.li2 {
+	color: #d4d4d4;
+	a{
+		color: #d4d4d4;
 	}
 }
 .theader {
