@@ -126,62 +126,85 @@ include "_LayoutHeader.php";
 
 <div id="content">
 
-<?php if( ($hasPreview || $hasSTL) && $authstage != "Basic" ){ ?>
-<div class="metadata">
-<?php }else{ ?>
-<div class="metadata fw">
-<?php } ?>
-<?php
-/* Display the results of the query. */
-echo "<b>Name:</b> ".$row['Name']."<br/>";
-echo "<b>Date:</b> ".$row['Date']->format("d/m/Y H:i:s")."<br/>";
-echo "<b>Description:</b> <i>".$row['Description']."</i><br/>";
-echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>"; //." - you are ".$authstage."<br/>";
-?>
-<i class="fa fa-tags"></i> <b>Tags:</b> 
-<ul class="fa-ul" style="margin-top:0px;">
-<?php
-/* Retrieve and display the results of the query. */
-while($tag = sqlsrv_fetch_array($srtags)) {
-    echo "<li><i class=\"fa-li fa fa-tag\"></i>".$tag['Name'].": <i><a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Value']."</a></i></li>";
-}
-?>
-</ul>
-<?php if( !$hasPreview && !$hasSTL || $authstage == "Basic"){ ?>
-</div>
-<div class="files">
-<?php } ?>
+	<?php if( ($hasPreview || $hasSTL) && $authstage != "Basic" ){ ?>
+	<div class="metadata">
+	<?php }else{ ?>
+	<div class="metadata fw">
+	<?php } ?>
+	<?php
+	/* Display the results of the query. */
+	echo "<b>Name:</b> ".$row['Name']."<br/>";
+	echo "<b>Date:</b> ".$row['Date']->format("d/m/Y H:i:s")."<br/>";
+	echo "<b>Description:</b> <i>".$row['Description']."</i><br/>";
+	echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>"; //." - you are ".$authstage."<br/>";
+	?>
+	<i class="fa fa-tags"></i> <b>Tags:</b> 
+	<ul class="fa-ul" style="margin-top:0px;">
+		<?php
+		/* Retrieve and display the results of the query. */
+		while($tag = sqlsrv_fetch_array($srtags)) {
+			echo "<li><i class=\"fa-li fa fa-tag\"></i>".$tag['Name'].": <i><a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Value']."</a></i></li>";
+		}
+		?>
+	</ul>
 
-<i class=" fa fa-files-o"></i> <b>Files:</b>
-<?php include "App_Data/ListFiles.php"; ?>
-<br/>
-<i class=" fa fa-link"></i> <b>Related Datasets:</b><br/>
-<ul class="fa-ul" style="margin-top:0px;">
-<li><i><a href="../netgraph.php?imgID=<?php echo $imageID;?>">(view network)</a></i></li>
-<?php while($item = sqlsrv_fetch_array($srparents)) {
-    echo "<li><i class=\"fa-li fa fa-male\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
-}?>
-<?php while($item = sqlsrv_fetch_array($srchilds)) {
-    echo "<li><i class=\"fa-li fa fa-child\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
-}?>
-</ul>
-</div>
-<?php if($hasPreview && $authstage != "Basic"){ ?>
-<div class="datacontent">
-<iframe src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
-</iframe>
-</div>
-<?php } ?>
-<?php if($hasSTL && $authstage != "Basic"){ 
-	$abspath = str_replace("../", "https://meddata.clients.soton.ac.uk/", $relpath);
-	$string = file_get_contents($relpath."/.previews/infoSTL.txt");
-	$stlfiles = explode("\n",$string);
+	<?php 
+if( !$hasPreview && !$hasSTL || $authstage == "Basic"){ 
+	?>
+	</div>
+
+	<div class="files">
+	<?php 
+} 
+	?>
+<?php 
+	if($authstage == "Viewer" || $authstage == "Writer" || $authstage == "Owner"){ 
 ?>
-<div class="datacontent">
-<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
-</iframe>
-</div>
-<?php } ?>
+		<i class=" fa fa-files-o"></i> <b>Files:</b>
+		<?php include "App_Data/ListFiles.php"; ?>
+		<br/>
+<?php 
+	} 
+?>
+		<i class=" fa fa-link"></i> <b>Related Datasets:</b><br/>
+		<ul class="fa-ul" style="margin-top:0px;">
+			<li><i><a href="../netgraph.php?imgID=<?php echo $imageID;?>">(view network)</a></i></li>
+			<?php while($item = sqlsrv_fetch_array($srparents)) {
+				echo "<li><i class=\"fa-li fa fa-male\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
+			}?>
+			<?php while($item = sqlsrv_fetch_array($srchilds)) {
+				echo "<li><i class=\"fa-li fa fa-child\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
+			}?>
+		</ul>
+	</div>
+
+<?php 
+	if($hasPreview && $authstage != "Basic"){ 
+?>
+	<div class="datacontent">
+		<iframe src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
+		</iframe>
+	</div>
+<?php 
+	} 
+?>
+
+<?php 
+	if($hasSTL && $authstage != "Basic"){ 
+		$abspath = str_replace("../", "https://meddata.clients.soton.ac.uk/", $relpath);
+		$string = file_get_contents($relpath."/.previews/infoSTL.txt");
+		$stlfiles = explode("\n",$string);
+?>
+		<div class="datacontent">
+			<!--<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
+			</iframe>-->
+			<iframe id="vs_iframe" src="viewstl/viewstl.htm?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
+			</iframe>
+		</div>
+<?php 
+	} 
+?>
+
 </div>
 <?php
 /* Free statement and connection resources. */  

@@ -21,6 +21,7 @@ if( $stmt === false )
 /* Get largest and smallest count. */
 $min = 0;
 $max = 0;
+$total = 0;
 while($row = sqlsrv_fetch_array($stmt2)) {
 	if ($min == 0){
 		$min = $row['Count'];
@@ -31,6 +32,7 @@ while($row = sqlsrv_fetch_array($stmt2)) {
 	if ($row['Count'] > $max){
 		$max = $row['Count'];
 	}
+	$total = $total + 1;
 }
 ?>
 
@@ -60,7 +62,11 @@ All tags<br/>
 <?php
 /* Retrieve and display the results of the query. */
 while($row = sqlsrv_fetch_array($stmt)) {
-	echo "<text style=\"font-size:".(60+80*($row['Count']-$min)/($max-$min))."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
+	//echo "<text style=\"font-size:".(60+80*($row['Count']-$min)/($max-$min))."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
+	$fontsize = 140-80*(($max/$row['Count'])-1)/($total-1);
+	if($fontsize > 0){
+		echo "<text style=\"font-size:".$fontsize."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
+	}
 }
 ?>
 </p>

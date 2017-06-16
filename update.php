@@ -321,7 +321,7 @@ if($_POST['Save']){
 	
 	
 	/***INSERT NEW USER***/
-    if( $userID != 0){
+    if( $userID !== ""){
 		$insertUser= sqlsrv_prepare( $conn, $queryau, array( &$imageID, &$userID));
 		if( sqlsrv_execute( $insertUser ))
 		{
@@ -349,7 +349,7 @@ if($_POST['Save']){
 	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
-}else if($_POST['UsrDel']){
+}else if(isset($_POST['UsrDel']) && $_POST['UsrDel'] !== ""){
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST['UsrDel'];
 	

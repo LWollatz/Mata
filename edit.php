@@ -125,12 +125,12 @@ while($key = sqlsrv_fetch_array($tagvalues)) {
 	});
 } );
 
-$( function() {
+/*$( function() {
 	var availableExperiments = [
-<?php 
+< ? p h p 
 while($key = sqlsrv_fetch_array($experiments)) {
     echo '{value: "'.$key['ID'].'", label: "'.$key['Name'].'", desc: '.json_encode($key['Description']).'},';
-} ?>
+} ? >
 	  {}];
 	$( "#OriExperiment" ).autocomplete({
 		minLength: 0,
@@ -149,7 +149,7 @@ while($key = sqlsrv_fetch_array($experiments)) {
 	.autocomplete("instance")._renderItem = function(ul,item){
 		return $("<li>").append("<div>" + item.label + "</div>").appendTo(ul);
 	};
-} );
+} );*/
 </script>
 </head>
 
@@ -169,6 +169,20 @@ include "_LayoutHeader.php";
 
 <div id="content">
 <form action="update.php" accept-charset="utf-8" method="post" id="mainform">
+
+<div class="floatspace">
+<div class="btngroup">
+	<button type="submit" name="Save" value="X" class="btn btn-submit" tabindex="1">
+		<i class="fa fa-floppy-o"></i> Save
+	</button>
+	<button type="reset" form="mainform" class="btn btn-abort" tabindex="2">
+		<i class="fa fa-undo"></i> Undo
+	</button>
+	<a class="btn btn-abort" style="color:#ffffff;" href="view.php?imgID=<?php echo $imageID;?>" tabindex="3">
+		<i class="fa fa-close"></i> Cancel
+	</a>
+</div>
+</div>
 
 <div class="container">
 	<table>
@@ -217,17 +231,19 @@ include "_LayoutHeader.php";
 	$json_a = json_decode($string, true);?>
 	<tr><td>width:</td><td><input type="text" name="ud_prvWidth" value="<?php echo $json_a['width'];?>"></td><td>px</td></tr>
 	<tr><td>height:</td><td><input type="text" name="ud_prvHeight" value="<?php echo $json_a['height'];?>"></td><td>px</td></tr>
-	<tr><td>x & z resolution:</td><td><input type="text" name="ud_prvRes" value="<?php if(isset($json_a['res'])){echo $json_a['res'];}?>"></td><td id="unitres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
-	<tr><td>z resolution:</td><td><input type="text" name="ud_prvZres" value="<?php if(isset($json_a['zres'])){echo $json_a['zres'];}?>"></td><td id="unitzres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
-	<tr><td>resolution units:</td><td><input type="text" id="ud_prvResunit" onkeyup="unitchanger();" name="ud_prvResunit" value="<?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>"></td><td></td></tr> <!--html_entity_decode(-->
+	<tr><td>x & y scale:</td><td><input type="text" name="ud_prvRes" value="<?php if(isset($json_a['res'])){echo $json_a['res'];}?>"></td><td id="unitres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
+	<tr><td>z scale:</td><td><input type="text" name="ud_prvZres" value="<?php if(isset($json_a['zres'])){echo $json_a['zres'];}?>"></td><td id="unitzres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
+	<tr><td>scale units:</td><td><input type="text" id="ud_prvResunit" onkeyup="unitchanger();" name="ud_prvResunit" value="<?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>"></td><td></td></tr> <!--html_entity_decode(-->
 	<tr><td>black pixel =</td><td><input type="text" name="ud_prvDensmin" value="<?php if(isset($json_a['densmin'])){echo $json_a['densmin'];}?>"></td><td><?php if(isset($json_a['densunit'])){echo $json_a['densunit'];}?></td></tr>
 	<tr><td>white pixel =</td><td><input type="text" name="ud_prvDensmax" value="<?php if(isset($json_a['densmax'])){echo $json_a['densmax'];}?>"></td><td><?php if(isset($json_a['densunit'])){echo $json_a['densunit'];}?></td></tr>
 	</table>
 </div>
 <?php } ?>
 
+
+
 <div class="container">
-	<table>
+	<table style="max-width:100%;">
 	<tr><td class="theader">Parent Datasets:</td><td></td></tr>
 	<tr><td colspan=2>(To delete a link, click on the <i class="fa fa-unlink"></i> unlink icon. <br/> To import the metadata from that link click the <i class="fa fa-paste"></i> import icon.)</td></tr>
 	<?php
@@ -237,10 +253,10 @@ include "_LayoutHeader.php";
 		<tr>
 			<td><?php echo $link['Name']; ?></td>
 			<td>
-			<button type="submit"  name="Un-Link" value="<?php echo $link['ParentExperimentID'];?>" class="btn btn-submit">
+			<button type="submit"  name="Un-Link" value="<?php echo $link['ParentExperimentID'];?>" class="btn btn-abort" tabindex="8" >
 				<i class="fa fa-unlink"></i>
 			</button>
-			<button type="submit"  name="Import" value="<?php echo $link['ParentExperimentID'];?>" class="btn btn-submit">
+			<button type="submit"  name="Import" value="<?php echo $link['ParentExperimentID'];?>" class="btn btn-submit" tabindex="6">
 				<i class="fa fa-paste"></i>
 			</button>
 			</td>
@@ -252,19 +268,148 @@ include "_LayoutHeader.php";
 	<tr>
 		<td>
 			<input name="NewID" type="hidden" value="<?php echo $imageID; ?>" />
-			<input id="OriExperiment" type="text" name="OriExperiment" value="">
-			<input id="OriID" type="hidden" name="OriID" value="">
-			<br/><span id="OriDescription"></span>
+			<!--<input id="OriExperiment" type="text" name="OriExperiment" value="">
+			<input id="OriID" type="hidden" name="OriID" value="">-->
+			<div class="ui-widget">
+			  <select id="OriID" name="OriID" class="combobox">
+				<option value="">Select one...</option>
+<?php 
+while($key = sqlsrv_fetch_array($experiments)) {
+    echo '<option value="'.$key['ID'].'" alt="'.$key['Description'].'">'.$key['Name'].'</option>';
+} ?>
+			  </select>
+			</div>
 		</td>
 		<td>
-			<button type="submit"  name="Link" value="X" class="btn btn-submit">
+			<button type="submit"  name="Link" value="X" class="btn btn-submit" tabindex="5">
 				<i class="fa fa-link"></i>
 			</button>
 		</td>
 	</tr>
+	<tr style="max-width:30%;width:200px;">
+	<td colspan=3 ><div id="OriDescription" style="max-width:100%;overflow:hide;"></div></td>
+	</tr>
 	
 	</table>
 </div>
+<script>
+  $( function() {
+    $.widget( "custom.combobox", {
+      _create: function() {
+        this.wrapper = $( "<span>" )
+          .addClass( "custom-combobox" )
+          .insertAfter( this.element );
+        this.element.hide();
+        this._createAutocomplete();
+        this._createShowAllButton();
+      },
+      _createAutocomplete: function() {
+        var selected = this.element.children( ":selected" ),
+          value = selected.val() ? selected.text() : "";
+        this.input = $( "<input>" )
+          .appendTo( this.wrapper )
+          .val( value )
+          .attr( "title", "" )
+          .addClass( "custom-combobox-input" )
+          .autocomplete({
+            delay: 0,
+            minLength: 0,
+            source: $.proxy( this, "_source" )
+          });
+        this._on( this.input, {
+          autocompleteselect: function( event, ui ) {
+            ui.item.option.selected = true;
+            this._trigger( "select", event, {
+              item: ui.item.option
+            });
+			$("#OriDescription").html( ui.item.desc );
+          },
+          autocompletechange: "_removeIfInvalid"
+        });
+      },
+      _createShowAllButton: function() {
+        var input = this.input,
+          wasOpen = false;
+        $( "<a>" )
+          .attr( "tabIndex", -1 )
+          .attr( "title", "Show All Items" )
+          .appendTo( this.wrapper )
+          .button({
+            icons: {
+              primary: "ui-icon-triangle-1-s"
+            },
+            text: false
+          })
+          .removeClass( "ui-corner-all ui-widget" )
+          .addClass( "custom-combobox-toggle ui-corner-right" )
+          .on( "mousedown", function() {
+            wasOpen = input.autocomplete( "widget" ).is( ":visible" );
+          })
+
+          .on( "click", function() {
+            input.trigger( "focus" );
+            // Close if already visible
+            if ( wasOpen ) {
+              return;
+            }
+            // Pass empty string as value to search for, displaying all results
+            input.autocomplete( "search", "" );
+          });
+      },
+      _source: function( request, response ) {
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+        response( this.element.children( "option" ).map(function() {
+          var text = $( this ).text();
+		  var desc = $( this ).attr("alt");
+          if ( this.value && ( !request.term || matcher.test(text) ) )
+            return {
+              label: text,
+              value: text,
+			  desc: desc,
+              option: this
+            };
+        }) );
+      },
+      _removeIfInvalid: function( event, ui ) {
+        // Selected an item, nothing to do
+        if ( ui.item ) {
+          return;
+        }
+        // Search for a match (case-insensitive)
+        var value = this.input.val(),
+          valueLowerCase = value.toLowerCase(),
+          valid = false;
+        this.element.children( "option" ).each(function() {
+          if ( $( this ).text().toLowerCase() === valueLowerCase ) {
+            this.selected = valid = true;
+            return false;
+          }
+        });
+        // Found a match, nothing to do
+        if ( valid ) {
+          return;
+        }
+        // Remove invalid value
+        this.input
+          .val( "" )
+          .attr( "title", value + " didn't match any item" )
+		  .css( "border-color", "#f00f2c" );
+		$("#OriDescription").html( "" );
+        this.element.val( "" );
+		
+        this._delay(function() {
+          this.input.css( "border-color", "#266c8e" );
+        }, 2500 );
+        this.input.autocomplete( "instance" ).term = "";
+      },
+      _destroy: function() {
+        this.wrapper.remove();
+        this.element.show();
+      }
+    });
+    $( "#OriID" ).combobox();
+  } );
+</script>
 
 <?php if($authstage == "Owner"){ ?>
 <div class="container">
@@ -309,7 +454,7 @@ include "_LayoutHeader.php";
 			<td><?php echo $exp['Name']; ?></td>
 			<td>Can Edit</td>
 			<td>
-			<button type="submit"  name="UsrDel" value="<?php echo $exp['ID'];?>" class="btn btn-submit">
+			<button type="submit"  name="UsrDel" value="<?php echo $exp['ID'];?>" class="btn btn-abort" tabindex="7">
 				<i class="fa fa-minus"></i>
 			</button>
 			</td>
@@ -320,12 +465,21 @@ include "_LayoutHeader.php";
 	
 	<tr>
 		<td>
-			<input id="NewUSR" name="NewUSR" type="text" value="" />
-			<input id="NewUSRID" name="NewUSRID" type="hidden" value="">
+			<div class="ui-widget">
+			  <select id="NewUSRID" name="NewUSRID" class="combobox">
+				<option value="">Select one...</option>
+<?php 
+while($key = sqlsrv_fetch_array($editSRAllUsers)) {
+    echo '<option value="'.$key['ID'].'">'.$key['Name'].'</option>';
+} ?>
+			  </select>
+			</div>
+
+
 		</td>
 		<td>Can Edit</td>
 		<td>
-			<button type="submit"  name="UsrAdd" value="<?php echo $imageID; ?>" class="btn btn-submit">
+			<button type="submit"  name="UsrAdd" value="<?php echo $imageID; ?>" class="btn btn-submit" tabindex="4">
 				<i class="fa fa-plus"></i>
 			</button>
 		</td>
@@ -334,64 +488,140 @@ include "_LayoutHeader.php";
 	</table>
 </div>
 <script>
-$( function() {
-	var allUsers = [
-<?php 
-while($key = sqlsrv_fetch_array($editSRAllUsers)) {
-    echo '{value: "'.$key['ID'].'", label: "'.$key['Name'].'"},';
-} ?>
-	  {}];
-	$( "#NewUSR" ).autocomplete({
-		minLength: 0,
-		source: allUsers,
-		focus: function(event,ui){
-			$("#NewUSR").val( ui.item.label );
-			return false;
-		},
-		select: function(event,ui){
-			$("#NewUSRID").val( ui.item.value );
-			$("#NewUSR").val( ui.item.label );
-			return false;
-		}
-	})
-	.autocomplete("instance")._renderItem = function(ul,item){
-		return $("<li>").append("<div>" + item.label + "</div>").appendTo(ul);
-	};
-} );
+  $( function() {
+    $.widget( "custom.combobox", {
+      _create: function() {
+        this.wrapper = $( "<span>" )
+          .addClass( "custom-combobox" )
+          .insertAfter( this.element );
+        this.element.hide();
+        this._createAutocomplete();
+        this._createShowAllButton();
+      },
+      _createAutocomplete: function() {
+        var selected = this.element.children( ":selected" ),
+          value = selected.val() ? selected.text() : "";
+        this.input = $( "<input>" )
+          .appendTo( this.wrapper )
+          .val( value )
+          .attr( "title", "" )
+          .addClass( "custom-combobox-input" )
+          .autocomplete({
+            delay: 0,
+            minLength: 0,
+            source: $.proxy( this, "_source" )
+          });
+        this._on( this.input, {
+          autocompleteselect: function( event, ui ) {
+            ui.item.option.selected = true;
+            this._trigger( "select", event, {
+              item: ui.item.option
+            });
+          },
+          autocompletechange: "_removeIfInvalid"
+        });
+      },
+      _createShowAllButton: function() {
+        var input = this.input,
+          wasOpen = false;
+        $( "<a>" )
+          .attr( "tabIndex", -1 )
+          .attr( "title", "Show All Items" )
+          .appendTo( this.wrapper )
+          .button({
+            icons: {
+              primary: "ui-icon-triangle-1-s"
+            },
+            text: false
+          })
+          .removeClass( "ui-corner-all ui-widget" )
+          .addClass( "custom-combobox-toggle ui-corner-right" )
+          .on( "mousedown", function() {
+            wasOpen = input.autocomplete( "widget" ).is( ":visible" );
+          })
+
+          .on( "click", function() {
+            input.trigger( "focus" );
+            // Close if already visible
+            if ( wasOpen ) {
+              return;
+            }
+            // Pass empty string as value to search for, displaying all results
+            input.autocomplete( "search", "" );
+          });
+      },
+      _source: function( request, response ) {
+        var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+        response( this.element.children( "option" ).map(function() {
+          var text = $( this ).text();
+          if ( this.value && ( !request.term || matcher.test(text) ) )
+            return {
+              label: text,
+              value: text,
+              option: this
+            };
+        }) );
+      },
+      _removeIfInvalid: function( event, ui ) {
+        // Selected an item, nothing to do
+        if ( ui.item ) {
+          return;
+        }
+        // Search for a match (case-insensitive)
+        var value = this.input.val(),
+          valueLowerCase = value.toLowerCase(),
+          valid = false;
+        this.element.children( "option" ).each(function() {
+          if ( $( this ).text().toLowerCase() === valueLowerCase ) {
+            this.selected = valid = true;
+            return false;
+          }
+        });
+        // Found a match, nothing to do
+        if ( valid ) {
+          return;
+        }
+        // Remove invalid value
+        this.input
+          .val( "" )
+          .attr( "title", value + " didn't match any item" )
+          .tooltip( "open" );
+        this.element.val( "" );
+        this._delay(function() {
+          this.input.tooltip( "close" ).attr( "title", "" );
+        }, 2500 );
+        this.input.autocomplete( "instance" ).term = "";
+      },
+      _destroy: function() {
+        this.wrapper.remove();
+        this.element.show();
+      }
+    });
+    $( "#NewUSRID" ).combobox();
+  } );
 </script>
+
 <?php } ?>
 
 <input name="utf8" type="hidden" value="&#x2713;" />
 <br/>
+
+
+<div class="floatspace">
 <div class="btngroup">
-	<button type="submit" name="Save" value="X" class="btn btn-submit">
+	<button type="submit" name="Save" value="X" class="btn btn-submit" tabindex="1">
 		<i class="fa fa-floppy-o"></i> Save
 	</button>
-	<button type="reset" form="mainform" class="btn btn-abort">
+	<button type="reset" form="mainform" class="btn btn-abort" tabindex="2">
 		<i class="fa fa-undo"></i> Undo
 	</button>
-	<a class="btn btn-abort" style="color:#ffffff;" href="view.php?imgID=<?php echo $imageID;?>">
+	<a class="btn btn-abort" style="color:#ffffff;" href="view.php?imgID=<?php echo $imageID;?>" tabindex="3">
 		<i class="fa fa-close"></i> Cancel
 	</a>
 </div>
-</form>
+</div>
 
-<!--
-<form action="importExperiment.php" accept-charset="utf-8" method="post" id="importform">
-<input name="NewID" type="hidden" value="<?php echo $imageID; ?>" />
-<div class="btngroup">
-	<input id="OriExperiment" type="text" name="OriExperiment" value="">
-	<input id="OriID" type="hidden" name="OriID" value="">
-	<button type="submit" form="importform" class="btn btn-submit">
-		<i class="fa fa-paste"></i> Import
-	</button>
-	<a class="btn btn-abort" style="color:#ffffff;" href="view.php?imgID=<?php echo $imageID;?>">
-		<i class="fa fa-close"></i> Cancel
-	</a>
-	<br/><span id="OriDescription"></span>
-</div>
 </form>
--->
 
 </div>
 
