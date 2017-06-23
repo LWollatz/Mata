@@ -4,6 +4,8 @@ $ErrorMsg = "";
 $InfoMsg = "";
 $searchphrase = "";
 $serverName = "MEDDATA"; //serverName\instanceName
+$thisurl = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]$_SERVER[PHP_SELF]";
+$thisurlfull = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 $connectionInfo = array( "Database"=>"MEDDATADB" );
 /* Connect using Windows Authentication. */  
 $conn = sqlsrv_connect( $serverName, $connectionInfo);  

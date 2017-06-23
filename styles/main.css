@@ -122,10 +122,12 @@ div#header {
   position: relative;
   margin: 0px 0px 0px 0px;
   overflow-x: hidden;
+  z-index: 2;
 }
 h1 {
   color: #266c8e;
   margin: 0px 0px 0px 0px;
+  z-index: 10;
 }
 .menu {
   color: #ffffff;
@@ -137,6 +139,7 @@ h1 {
   clear: left;
 }
 .menu a {
+  z-index: 1000;
   float: left;
   border: 0px;
   border-color: #000000;
@@ -214,6 +217,16 @@ footer {
   background-color: #266c8e;
   padding-top: 5px;
   margin: 0px 0px 0px 0px;
+}
+footer a{
+  color: #ffffff;
+  text-decoration: none;
+}
+footer a:visited{
+  color: #ffffff;
+}
+footer a:hover{
+  color: #369aca;
 }
 div.metadata {
   float: left;
@@ -308,6 +321,7 @@ div.files {
   background-color: #f00f2c;
 }
 .menu .btn {
+  z-index: 1000;
   color: #ffffff;
   background-color: #266c8e;
 }
@@ -384,6 +398,73 @@ div .floatspace {
   -webkit-transition-duration: 0.4s;
   transition-duration: 0.4s;
 }
+#content select {
+  border-radius: 4px;
+  border: 1px solid #266c8e;
+  padding: 2px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 16px;
+  color: #266c8e;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+}
+#content select:focus {
+  border-radius: 4px;
+  border: 3px solid #266c8e;
+  padding: 0px 3px;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+}
+
+#content table.list{
+	width: 100%;
+}
+#content table.list tr:nth-child(odd){
+	background-color: #d4d4d4;
+}
+#content table.list col:first-child{
+	max-width: 20px;
+	width: 20px;
+}
+#content table.list col:nth-child(3){
+	/*max-width: 160px;*/
+	width: 15%;
+	min-width: 80px;
+}
+#content table.list tr:hover{
+	background-color: #266c8e;
+	color: #ffffff;
+}
+#content table.list tr:hover a{
+	color: #d4d4d4;
+}
+#content table.list tr:hover a:visited{
+	color: #d4d4d4;
+}
+#content table.list tr:hover a:hover{
+	color: #ffffff;
+}
+#content table.list tr:first-child{
+	background-color: #323d43;
+	color: #ffffff;
+}
+#content table.list tr:first-child:hover{
+	background-color: #323d43;
+}
+#content table.list tr:first-child a{
+	color: #d4d4d4;
+}
+#content table.list tr:first-child a:visited{
+	color: #d4d4d4;
+}
+#content table.list tr:first-child a:hover{
+	color: #ffffff;
+}
+
+
 div.container {
   float: left;
   margin: 10px 10px 10px 10px;
@@ -483,3 +564,27 @@ div.info {
   filter: grayscale(100%) brightness(100);
   /*-ms-filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);*/
 }
+
+.maintitle{
+	z-index: 10;
+	width: 70%;
+	float: left;
+	overflow: hidden;
+}
+
+.unilogo{
+  position: absolute;
+  overflow: hidden;
+  z-index: 5;
+  top: 0px;
+  right:0px;
+  width: 30%;
+  max-width: 150px;
+  float: right;
+  text-align: right;
+  max-height: 20%;
+  border-width: 0px;
+  padding-top: 0;
+  padding: 3px 3px 3px 3px;
+}
+

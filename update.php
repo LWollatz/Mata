@@ -169,6 +169,10 @@ if($_POST['Save']){
 		$json_obj['height'] = $ud_prvHeight;
 		$json_obj['res'] = $ud_prvRes;
 		$json_obj['zres'] = $ud_prvZres;
+		$ud_prvResunit = $ud_prvResunit.trim();
+		if ($ud_prvResunit === "micron" || $ud_prvResunit === "microns" || $ud_prvResunit === "mu-m"){
+			$ud_prvResunit = "&mu;m";
+		}
 		$json_obj['resunits'] = $ud_prvResunit;
 		$json_obj['densmin'] = $ud_prvDensmin;
 		$json_obj['densmax'] = $ud_prvDensmax;
@@ -310,11 +314,15 @@ if($_POST['Save']){
 }else if($_POST['UsrAdd']){
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST["NewUSRID"];
+	$userPermission = (int)$_POST["NewUSRprm"];
 	echo $userID;
+	if($userPermission !== 1){
+		$userPermission = 0;
+	}
 	
 	$queryau="INSERT INTO [MEDDATADB].[dbo].[UserAccess]
       ( [ExperimentID], [UserID], [WriteAccessGranted] )   
-      VALUES (?, ?, 1)";
+      VALUES (?, ?, ?)";
 
     $errmsg = "";
     $infomsg = "";
@@ -322,7 +330,7 @@ if($_POST['Save']){
 	
 	/***INSERT NEW USER***/
     if( $userID !== ""){
-		$insertUser= sqlsrv_prepare( $conn, $queryau, array( &$imageID, &$userID));
+		$insertUser= sqlsrv_prepare( $conn, $queryau, array( &$imageID, &$userID, &$userPermission));
 		if( sqlsrv_execute( $insertUser ))
 		{
 			if( sqlsrv_rows_affected( $insertUser ) > 0)

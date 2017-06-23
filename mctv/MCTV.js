@@ -202,7 +202,9 @@ function engUnit(number,unit){
  */
     var value = parseFloat(number);
     var unitlevel = 0;
-    if (Math.abs(value) >= 0.1 && Math.abs(value) < 100){
+	unit = unit.trim();
+	var baseunit = "m";
+    if (Math.abs(value) >= 0.1 && Math.abs(value) < 10){
         return Math.round(value*100)/100 + " " + unit;
     }
     //detect zeros of unit
@@ -210,7 +212,7 @@ function engUnit(number,unit){
         unitlevel = -9;
     }else if (unit === "&mu;m"){
         unitlevel = -6;
-    }else if (unit === "mm"){
+	}else if (unit === "mm"){
         unitlevel = -3;
     }else if (unit === "cm"){
         unitlevel = -2;
@@ -218,27 +220,31 @@ function engUnit(number,unit){
         unitlevel = -1;
     }else if (unit === "km"){
         unitlevel = 3;
-    }else if (unit === "px"){
+    }else if (unit === "m"){
         unitlevel = 0;
+    }else{
+        unitlevel = 0;
+		baseunit = unit;
     }
     //get to next best unit
     while(Math.abs(value) < 0.1 && unitlevel > -9){
         value = value*10;
         unitlevel -= 1;
     }
-    while(Math.abs(value) >= 100  && unitlevel < 3){
+    while(Math.abs(value) >= 10  && unitlevel < 3){
         value = value/10;
         unitlevel += 1;
     }
-    if (unitlevel == 2 || unitlevel == -4 || unitlevel == -7){
-        value = value/10;
-        unitlevel += 1;
-    }else if (unitlevel == 1 || unitlevel == -5 || unitlevel == -8){
-        value = value*10;
-        unitlevel -= 1;
-    }
+	if (baseunit === "m"){
+		if (unitlevel == 2 || unitlevel == -4 || unitlevel == -7){
+			value = value/10;
+			unitlevel += 1;
+		}else if (unitlevel == 1 || unitlevel == -5 || unitlevel == -8){
+			value = value*10;
+			unitlevel -= 1;
+		}
     //return string representation
-	if (unit != "px"){
+	
 		if (unitlevel == -9){
 			unit = "nm";
 		}else if (unitlevel == -6){
@@ -255,16 +261,23 @@ function engUnit(number,unit){
 			unit = "km";
 		}
 	}else{
+		if (unitlevel == 2 || unitlevel == -1 || unitlevel == -4 || unitlevel == -7){
+			value = value/10;
+			unitlevel += 1;
+		}else if (unitlevel == 1 || unitlevel == -2 || unitlevel == -5 || unitlevel == -8){
+			value = value*10;
+			unitlevel -= 1;
+		}
 		if (unitlevel == -9){
-			unit = "e-9 px";
+			unit = "e<sup>-9</sup> " + baseunit;
 		}else if (unitlevel == -6){
-			unit = "e-6 px";
+			unit = "e<sup>-6</sup> " + baseunit;
 		}else if (unitlevel == -3){
-			unit = "e-3 px";
+			unit = "e<sup>-3</sup> " + baseunit;
 		}else if (unitlevel == 0){
-			unit = "px";
+			unit = baseunit;
 		}else if (unitlevel == 3){
-			unit = "e+3 px";
+			unit = "e<sup>+3</sup> " + baseunit;
 		}
 	}
     return Math.round(value*100)/100 + " " + unit;

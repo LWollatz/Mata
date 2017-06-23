@@ -65,7 +65,7 @@ while($row = sqlsrv_fetch_array($stmt)) {
 	//echo "<text style=\"font-size:".(60+80*($row['Count']-$min)/($max-$min))."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
 	$fontsize = 140-80*(($max/$row['Count'])-1)/($total-1);
 	if($fontsize > 0){
-		echo "<text style=\"font-size:".$fontsize."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
+		echo "<text style=\"font-size:".$fontsize."%\"><a onMouseOver=\"this.innerHTML='".$row['Name'].": ".$row['Value']."';\" onMouseOut=\"this.innerHTML='".$row['Value']."';\" href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
 	}
 }
 ?>

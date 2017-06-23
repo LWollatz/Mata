@@ -3,8 +3,10 @@
 <?php
 /*<!--php-->*/
 include "_LayoutDatabase.php";
+$errmsg = "";
 /* get variables */
 $imageID = (int)$_GET['imgID'];
+
 
 include "_SecurityCheck.php";
 if($authstage == "None"){
@@ -45,7 +47,6 @@ $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
   WHERE [ExperimentID] = ? 
   AND [IsDeleted] = 0 
-  AND NOT [Filename] LIKE '%.tif'
   ORDER BY [Filename]";
   
 $epsql = "SELECT [ParentExperimentID] AS [ExperimentID]
@@ -84,7 +85,13 @@ $owner = sqlsrv_fetch_array($srowner);
 /*Check if normal Experiment (not config data)*/
 if($row["ExperimentTypeID"] != 0){
 	$errmsg = $errmsg."Invalid ID ";
-	header('Location: http://meddata.clients.soton.ac.uk/error.php?msg='.$infomsg.'&err='.$errmsg);
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Unavailable");
+	header("Location: /error.php?errcode=404");;
+}
+$datasetDeleted = False;
+if($row["IsDeleted"] != 0){
+	$errmsg = $errmsg."Dataset Deleted ";
+	$datasetDeleted = True;
 }
 
 
@@ -126,7 +133,7 @@ include "_LayoutHeader.php";
 
 <div id="content">
 
-	<?php if( ($hasPreview || $hasSTL) && $authstage != "Basic" ){ ?>
+	<?php if( ($hasPreview || $hasSTL) && $authstage != "Basic" && !$datasetDeleted ){ ?>
 	<div class="metadata">
 	<?php }else{ ?>
 	<div class="metadata fw">
@@ -149,7 +156,7 @@ include "_LayoutHeader.php";
 	</ul>
 
 	<?php 
-if( !$hasPreview && !$hasSTL || $authstage == "Basic"){ 
+if( !$hasPreview && !$hasSTL || $authstage == "Basic" || $datasetDeleted){ 
 	?>
 	</div>
 
@@ -158,7 +165,7 @@ if( !$hasPreview && !$hasSTL || $authstage == "Basic"){
 } 
 	?>
 <?php 
-	if($authstage == "Viewer" || $authstage == "Writer" || $authstage == "Owner"){ 
+	if(!$datasetDeleted && ($authstage == "Basic" || $authstage == "Viewer" || $authstage == "Writer" || $authstage == "Owner")){ 
 ?>
 		<i class=" fa fa-files-o"></i> <b>Files:</b>
 		<?php include "App_Data/ListFiles.php"; ?>
@@ -179,7 +186,7 @@ if( !$hasPreview && !$hasSTL || $authstage == "Basic"){
 	</div>
 
 <?php 
-	if($hasPreview && $authstage != "Basic"){ 
+	if($hasPreview && $authstage != "Basic" && !$datasetDeleted){ 
 ?>
 	<div class="datacontent">
 		<iframe src="mctv/mctv.htm?root=<?php echo $relpath; ?>/.previews/">
@@ -190,22 +197,24 @@ if( !$hasPreview && !$hasSTL || $authstage == "Basic"){
 ?>
 
 <?php 
-	if($hasSTL && $authstage != "Basic"){ 
+	if($hasSTL && $authstage != "Basic" && !$datasetDeleted){ 
 		$abspath = str_replace("../", "https://meddata.clients.soton.ac.uk/", $relpath);
 		$string = file_get_contents($relpath."/.previews/infoSTL.txt");
 		$stlfiles = explode("\n",$string);
 ?>
-		<div class="datacontent">
-			<!--<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
+		<div class="datacontent" style="color:#ffffff;">
+			<!--<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>">
 			</iframe>-->
-			<iframe id="vs_iframe" src="viewstl/viewstl.htm?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
+			<iframe id="vs_iframe" src="viewstl/viewstl.php?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
 			</iframe>
+			<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>
 		</div>
 <?php 
 	} 
 ?>
 
 </div>
+
 <?php
 /* Free statement and connection resources. */  
 sqlsrv_free_stmt( $srinfo);  

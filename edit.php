@@ -82,6 +82,11 @@ if($row["ExperimentTypeID"] != 0){
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Unavailable");
 	header("Location: /error.php?errcode=404");;
 }
+$datasetDeleted = False;
+if($row["IsDeleted"] != 0){
+	$errmsg = $errmsg."Dataset Deleted ";
+	$datasetDeleted = True;
+}
 
 /*get relative path for files*/
 $relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
@@ -222,7 +227,7 @@ include "_LayoutHeader.php";
 	</table>
 </div>
 
-<?php if (file_exists($relpath."/.previews/infoJSON.txt")){ ?>
+<?php if (file_exists($relpath."/.previews/infoJSON.txt") && !$datasetDeleted){ ?>
 <div class="container">
 	<table>
 	<tr><td class="theader">Previewer Values:</td><td><input type="hidden" name="relpath" value="<?php echo $relpath.'/.previews/infoJSON.txt';?>"></td></tr>
@@ -234,6 +239,7 @@ include "_LayoutHeader.php";
 	<tr><td>x & y scale:</td><td><input type="text" name="ud_prvRes" value="<?php if(isset($json_a['res'])){echo $json_a['res'];}?>"></td><td id="unitres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
 	<tr><td>z scale:</td><td><input type="text" name="ud_prvZres" value="<?php if(isset($json_a['zres'])){echo $json_a['zres'];}?>"></td><td id="unitzres"><?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>/px</td></tr>
 	<tr><td>scale units:</td><td><input type="text" id="ud_prvResunit" onkeyup="unitchanger();" name="ud_prvResunit" value="<?php if(isset($json_a['resunits'])){echo html_entity_decode($json_a['resunits'], ENT_COMPAT | ENT_HTML5, "UTF-8");}?>"></td><td></td></tr> <!--html_entity_decode(-->
+	<tr><td colspan=3><i>(You can use "microns" or "mu-m" for &mu;m.)</i></td></tr>
 	<tr><td>black pixel =</td><td><input type="text" name="ud_prvDensmin" value="<?php if(isset($json_a['densmin'])){echo $json_a['densmin'];}?>"></td><td><?php if(isset($json_a['densunit'])){echo $json_a['densunit'];}?></td></tr>
 	<tr><td>white pixel =</td><td><input type="text" name="ud_prvDensmax" value="<?php if(isset($json_a['densmax'])){echo $json_a['densmax'];}?>"></td><td><?php if(isset($json_a['densunit'])){echo $json_a['densunit'];}?></td></tr>
 	</table>
@@ -420,28 +426,31 @@ while($key = sqlsrv_fetch_array($experiments)) {
 	  JOIN [MEDDATADB].[dbo].[Users] ON  [MEDDATADB].[dbo].[Experiments].[Owner] = [MEDDATADB].[dbo].[Users].[ID]
 	  WHERE [MEDDATADB].[dbo].[Experiments].[ID] = ?";
 	  
-	$editSQLUsrAccess = "SELECT [MEDDATADB].[dbo].[UserAccess].[UserID] As ID, [MEDDATADB].[dbo].[Users].[Username] As Name
+	$editSQLUsrAccess = "SELECT [UserAccess].[UserID] As ID, [Users].[Username] As Name, [UserAccess].[WriteAccessGranted] As Permission
 	  FROM [MEDDATADB].[dbo].[UserAccess]
-	  JOIN [MEDDATADB].[dbo].[Users] ON  [MEDDATADB].[dbo].[UserAccess].[UserID] = [MEDDATADB].[dbo].[Users].[ID]
-	  WHERE [MEDDATADB].[dbo].[UserAccess].[ExperimentID] = ?";
+	  JOIN [MEDDATADB].[dbo].[Users] ON  [UserAccess].[UserID] = [Users].[ID]
+	  WHERE [UserAccess].[ExperimentID] = ?";
 	  
 	$editSQLAllUser = "SELECT [ID], [Username] As Name
 	  FROM [MEDDATADB].[dbo].[Users]
 	  WHERE NOT [ID] IN (SELECT [MEDDATADB].[dbo].[Experiments].[Owner] As ID
-	  FROM [MEDDATADB].[dbo].[Experiments] 
-	  WHERE [MEDDATADB].[dbo].[Experiments].[ID] = ?)";
+		FROM [MEDDATADB].[dbo].[Experiments] 
+		WHERE [MEDDATADB].[dbo].[Experiments].[ID] = ?)
+	  AND NOT [ID] IN (SELECT [MEDDATADB].[dbo].[UserAccess].[UserID] As ID
+		FROM [MEDDATADB].[dbo].[UserAccess]
+		WHERE [MEDDATADB].[dbo].[UserAccess].[ExperimentID] = ?)";
 	  
 	  
 	$editSROwnAccess = sqlsrv_query( $conn, $editSQLOwnAccess, array(&$imageID));	
 	$editSRUsrAccess = sqlsrv_query( $conn, $editSQLUsrAccess, array(&$imageID));
-	$editSRAllUsers = sqlsrv_query( $conn, $editSQLAllUser, array(&$imageID));
+	$editSRAllUsers = sqlsrv_query( $conn, $editSQLAllUser, array(&$imageID,&$imageID));
 	
 	
 	?>
 	
 	<table>
 	<tr><td class="theader">Users allowed to view this dataset:</td><td></td></tr>
-	<tr><td colspan=3>(To remove a user, click on the <i class="fa fa-minus"></i> remove icon.</td></tr>
+	<tr><td colspan=3>(To remove a user, click on the <i class="fa fa-minus"></i> remove icon.)</td></tr>
 	<?php $exp = sqlsrv_fetch_array($editSROwnAccess); ?>
 		<tr>
 			<td><?php echo $exp['Name']; ?></td>
@@ -452,7 +461,11 @@ while($key = sqlsrv_fetch_array($experiments)) {
 	while($exp = sqlsrv_fetch_array($editSRUsrAccess)) {?>
 		<tr>
 			<td><?php echo $exp['Name']; ?></td>
+			<?php if($exp['Permission'] == 1){ ?>
 			<td>Can Edit</td>
+			<?php }else{ ?>
+			<td>Can View</td>
+			<?php } ?>
 			<td>
 			<button type="submit"  name="UsrDel" value="<?php echo $exp['ID'];?>" class="btn btn-abort" tabindex="7">
 				<i class="fa fa-minus"></i>
@@ -477,7 +490,12 @@ while($key = sqlsrv_fetch_array($editSRAllUsers)) {
 
 
 		</td>
-		<td>Can Edit</td>
+		<td>
+			<select id="NewUSRprm" name="NewUSRprm" class="combobox">
+				<option value="0">Can View</option>
+				<option value="1">Can Edit</option>
+			</select>
+		</td>
 		<td>
 			<button type="submit"  name="UsrAdd" value="<?php echo $imageID; ?>" class="btn btn-submit" tabindex="4">
 				<i class="fa fa-plus"></i>

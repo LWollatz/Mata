@@ -11,23 +11,45 @@ if (isset($_POST["sphrase"])){
 }
 
 
+
 /* Query SQL Server for the data 
 **TODO: need to fix join operation to work with Experiments without parameters...** 
 */
   
 $tsql = "SELECT TOP 20 [MEDDATADB].[dbo].[Experiments].[ID]
       ,[MEDDATADB].[dbo].[Experiments].[Name]
+	  ,[MEDDATADB].[dbo].[Experiments].[Date]
       ,[MEDDATADB].[dbo].[Experiments].[Description]
   FROM [MEDDATADB].[dbo].[Experiments] 
-  INNER JOIN [MEDDATADB].[dbo].[ExperimentParameters] 
+  FULL OUTER JOIN [MEDDATADB].[dbo].[ExperimentParameters] 
   ON [MEDDATADB].[dbo].[Experiments].[ID] = [MEDDATADB].[dbo].[ExperimentParameters].[ExperimentID]
   WHERE [MEDDATADB].[dbo].[Experiments].[ExperimentTypeID] = 0
   AND ([MEDDATADB].[dbo].[Experiments].[Name] LIKE '%'+?+'%'
   OR [MEDDATADB].[dbo].[Experiments].[Description] LIKE '%'+?+'%'
   OR [MEDDATADB].[dbo].[ExperimentParameters].[Name] LIKE '%'+?+'%'
   OR [MEDDATADB].[dbo].[ExperimentParameters].[Value] LIKE '%'+?+'%')
-  GROUP BY [MEDDATADB].[dbo].[Experiments].[ID], [MEDDATADB].[dbo].[Experiments].[Name], [MEDDATADB].[dbo].[Experiments].[Description]
+  GROUP BY [MEDDATADB].[dbo].[Experiments].[ID], [MEDDATADB].[dbo].[Experiments].[Name], [MEDDATADB].[dbo].[Experiments].[Description], [MEDDATADB].[dbo].[Experiments].[Date]
   ";
+
+$tsql = "SELECT TOP 20 ID, Name, Date, Description, Count FROM( SELECT 
+		[MEDDATADB].[dbo].[Experiments].[ID] AS ID
+      ,[MEDDATADB].[dbo].[Experiments].[Name] AS Name
+	  ,[MEDDATADB].[dbo].[Experiments].[Date] AS Date
+      ,[MEDDATADB].[dbo].[Experiments].[Description] AS Description
+	  ,ISNULL(SUM(CASE WHEN [ExperimentParameters].[Name] LIKE '%'+?+'%' THEN 1 ELSE 0 END),0)
+	   + ISNULL(SUM(CASE WHEN [ExperimentParameters].[Value] LIKE '%'+?+'%' THEN 1 ELSE 0 END),0)
+	   + IIF(COUNT(CASE WHEN [Experiments].[Name] LIKE '%'+?+'%' THEN 1 END)>0,1,0) 
+	   + IIF(COUNT(CASE WHEN [Experiments].[Description] LIKE '%'+?+'%' THEN 1 END)>0,1,0) 
+		AS Count
+  FROM [MEDDATADB].[dbo].[Experiments] 
+  FULL OUTER JOIN [MEDDATADB].[dbo].[ExperimentParameters] 
+  ON [MEDDATADB].[dbo].[Experiments].[ID] = [MEDDATADB].[dbo].[ExperimentParameters].[ExperimentID]
+  WHERE [MEDDATADB].[dbo].[Experiments].[ExperimentTypeID] = 0
+  GROUP BY [MEDDATADB].[dbo].[Experiments].[ID], [MEDDATADB].[dbo].[Experiments].[Name], [MEDDATADB].[dbo].[Experiments].[Description], [MEDDATADB].[dbo].[Experiments].[Date]
+  ) AS temp
+  WHERE Count > 0
+  ORDER BY Count DESC";  
+
 $options = array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
 $stmt = sqlsrv_query( $conn, $tsql, array(&$searchphrase,&$searchphrase,&$searchphrase,&$searchphrase),$options);  
 if( $stmt === false )  
@@ -56,7 +78,7 @@ include "_LayoutHeader.php";
 
 <div id="content">
 <div>
-First <?php echo $resultCount; ?> datasets containing '<i><?php echo $searchphrase; ?></i>'<br/>
+Top <?php echo $resultCount; ?> datasets containing '<i><?php echo $searchphrase; ?></i>'<br/>
 
 <?php 
 	$experiments = $stmt;

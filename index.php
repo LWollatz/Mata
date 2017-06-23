@@ -4,6 +4,23 @@
 /*<!--php-->*/
 include "_LayoutDatabase.php";
 include "_SecurityCheck.php";
+$sortType = "Date";
+$sortOrder = "DESC";
+if (isset($_GET['sort'])){
+	$sortID = (int)$_GET['sort'];
+	if ($sortID === 1){
+		$sortType = "Name";
+	}else if ($sortID === 2){
+		$sortType = "Date";
+	}else if ($sortID === 3){
+		$sortType = "Description";
+	}
+}
+if (isset($_GET['order'])){
+	if ((int)$_GET['order'] === 0){
+		$sortOrder = "ASC";
+	}
+}
 /* Query SQL Server for the data */   
 $tsql = "SELECT TOP 1000 [ID]
       ,[Name]
@@ -12,7 +29,8 @@ $tsql = "SELECT TOP 1000 [ID]
       ,[DefaultBasePath]
   FROM [MEDDATADB].[dbo].[Experiments]
   WHERE [ExperimentTypeID] = 0
-  AND [IsDeleted] = 0";
+  AND [IsDeleted] = 0
+  ORDER BY [".$sortType."]".$sortOrder;
 $stmt = sqlsrv_query( $conn, $tsql);  
 if( $stmt === false )  
 {  

@@ -6,7 +6,7 @@ $savedparts = array();
 while($file = sqlsrv_fetch_array($srfiles)) {
 	$fileparts = explode('.',$file['Filename']);
 	$fileending = end($fileparts);
-	if (strpos(".tif.tiff.bmp.png.jpg", $fileending) === FALSE){
+	if (strpos(".exe.msi.", $fileending) === FALSE){
 		$filepath = str_replace("c:\\", "//meddata.clients.soton.ac.uk/", $file['BasePath']);
 		$filepath = str_replace("\\", "/", $filepath);
 		$fileendpath = str_replace("\\", "/", $file['Filename']);
@@ -78,6 +78,9 @@ while($file = sqlsrv_fetch_array($srfiles)) {
 			if($hasSTL){
 				$fileload = " <a title=\"view\" onclick=\"document.getElementById('vs_iframe').contentWindow.postMessage({msg_type:'load',url:'".$filepath."/".$fileendpath."'},'*')\"><i class=\"fa fa-fw fa-eye\"></i></a>";
 			}
+		}
+		if (strpos(".png.jpg.jpeg.tif.tiff.gif.bmp.", $fileending) !== FALSE){
+			$filetype = "fa-file-image-o";
 		}
 		$filetype = "<i class=\"fa fa-fw ".$filetype."\"></i>";
 		if (strpos(".vol.raw.", $fileending) !== FALSE){

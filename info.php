@@ -12,7 +12,11 @@
 
 <body>
 
-<div id="header">
+<?php 
+include "_LayoutHeader.php"; 
+?> 
+
+<!--<div id="header">
 	<h1>MEDDATA</h1>
 	<form action="search.php" accept-charset="utf-8" method="post" class="menu">
 		<a href="index.php"><i class="fa fa-home"></i> Home</a>
@@ -24,14 +28,15 @@
 		</button>
 		<input type="text" name="sphrase" class="search" value="" placeholder="Search.."/>
 	</form>
-</div>
+</div>-->
 
 <div id="content">
 
 <h2>How to connect:</h2>
 requires VPN to soton.ac.uk
 <h3>Connect to website</h3>
-open https://meddata.clients.soton.ac.uk in a browser
+open https://meddata.clients.soton.ac.uk in a browser<br/>
+sign in to your account (remember to switch the domain by adding "THEMEDDATA\" in front of your username!)
 <h3>Connect to filestore</h3>
 <ol>
 	<li>If not on university network, connect via VPN</li>
