@@ -63,11 +63,11 @@
 		array_push($expAccess,array(('id') => $exp['ID'], ('level') => "owner"));
 	}
 	while($exp = sqlsrv_fetch_array($securitySRUsrAccess)) {
-		//if((int)$exp['Write'] === 1){
-		//	array_push($expAccess,array(('id') => $exp['ID'], ('level') => "edit"));
-		//}else{
+		if((int)$exp['Write'] === 1){
+			array_push($expAccess,array(('id') => $exp['ID'], ('level') => "edit"));
+		}else{
 			array_push($expAccess,array(('id') => $exp['ID'], ('level') => "view"));
-		//}
+		}
 	}
 	
 	?>
@@ -132,7 +132,7 @@
 				<i class="fa fa-bullseye"
 		<?php 
 			}else if($tmpPermission == "view"){ ?>
-				<i class="fa fa-dot-circle"
+				<i class="fa fa-dot-circle-o"
 		<?php
 			}else{ ?>
 				<i class="fa fa-circle-o"
@@ -154,7 +154,7 @@
 		?>
 	</table>
 	<p>Key: <i class="fa fa-circle"></i>Owner, <i class="fa fa-bullseye"></i>Edit Permission, <i class="fa fa-dot-circle-o"></i>View Permission, <i class="fa fa-circle-o"></i>No Permission</p>
-	
+	<br/>
 	
 	<!--
 	<ul class="fa-ul li-def">

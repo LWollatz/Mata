@@ -231,7 +231,8 @@ footer a:hover{
 div.metadata {
   float: left;
   clear: left;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   width: 120px;
   min-height: calc(100vh - 95px);
   max-height: calc(100vh - 95px);
@@ -248,10 +249,16 @@ div.metadata.fw {
   width: 30%;
   overflow-x: hidden;
   overflow-y: auto;
+  border-right-width: 0px;
+}
+div.metadata.fw:hover {
+  width: 30%;
+  overflow-x: scroll;
+  overflow-y: auto;
 }
 div.metadata:hover {
   width: 30%;
-  overflow-x: hidden;
+  overflow-x: scroll;
   overflow-y: auto;
   min-height: calc(100vh - 95px);
   -webkit-transition-duration: 0.4s;
@@ -275,6 +282,10 @@ div.files {
   clear: right;
   padding-top: 5px;
   padding-left: 5px;
+  min-height: calc(100vh - 95px);
+  border-left-width: 3px;
+  border-left-color: #323d43;
+  border-left-style: solid;
 }
 .btn {
   border: 0px;
@@ -464,6 +475,10 @@ div .floatspace {
 	color: #ffffff;
 }
 
+.treeli li{
+	word-wrap: break-word;
+	white-space: normal;
+}
 
 div.container {
   float: left;

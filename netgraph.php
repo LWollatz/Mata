@@ -43,8 +43,8 @@ $csql = "SELECT [ParentExperimentID]
   
 $tsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] = @1";
-$tsql = str_replace("@1", $imageID, $tsql);
+  WHERE [ExperimentID] = ?";
+//$tsql = str_replace("@1", $imageID, $tsql);
 
 $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
@@ -56,7 +56,7 @@ $fsql = "SELECT *
 $options = array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
 
 $srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
-//$srtags = sqlsrv_query( $conn, $tsql); 
+//$srtags = sqlsrv_query( $conn, $tsql, array(&$imageID)); 
 //$srfiles = sqlsrv_query( $conn, $fsql, array(&$imageID));
 $srowner = sqlsrv_query( $conn, $osql, array(&$imageID));
 
@@ -114,8 +114,13 @@ $alllevels = array(2);
 $allids = array($imageID);
 $newids = array(array(('id') => $imageID, ('level') => 2 ));
 $edges = array();
-$edgeoptions = ", arrows:'to', color:'#369aca'";
+$edgesT = array();
+$edgeoptions = ", color:'#d4d4d4', chosen:{edge:function(values,id,selected,hovering){values.color = '#323d43';values.width = 3;}}";
+$edgeoptions = ", color:{color:'#d4d4d4', highlight:'#323d43', hover:'#323d43'}";
+$edgeDSoptions = ", width:3, color:'#369aca', smooth:{enabled:'false'}";
 $nodeoptions = ", group: 'datasets'"; //, color:'#266c8e', font:{color:'#ffffff'}";
+$nodeuseroptions = ", group: 'users'";
+$nodetagoptions = ", group: 'tags'";
 $nodespecoptions = ", group: 'datasets', icon: {color:'#f00f2c'}"; //, color:'#f00f2c', font:{color:'#ffffff'}";
 
 while(sizeof($newids) > 0){
@@ -135,9 +140,9 @@ while(sizeof($newids) > 0){
 			array_push($alllevels,$curlvl + 1);
 			array_push($newids,array(('id') => $child['LinkedExperimentID'],('level') => $curlvl + 1));
 		}
-		$tmp = "{from: ".$child['ParentExperimentID'].", to: ".$child['LinkedExperimentID'].$edgeoptions."}";
-		if(!in_array($tmp,$edges)){
-			array_push($edges,$tmp);
+		$tmp = "{from: ".$child['ParentExperimentID'].", to: ".$child['LinkedExperimentID'].$edgeDSoptions."}";
+		if(!in_array($tmp,$edgesT)){
+			array_push($edgesT,$tmp);
 		}
 		//echo sizeof($newids);
 		//echo "<br/>";
@@ -152,9 +157,9 @@ while(sizeof($newids) > 0){
 			array_push($alllevels,$curlvl - 1);
 			array_push($newids,array(('id') => $parent['ParentExperimentID'],('level') => $curlvl - 1));
 		}
-		$tmp = "{from: ".$parent['ParentExperimentID'].", to: ".$parent['LinkedExperimentID'].$edgeoptions."}";
-		if(!in_array($tmp,$edges)){
-			array_push($edges,$tmp);
+		$tmp = "{from: ".$parent['ParentExperimentID'].", to: ".$parent['LinkedExperimentID'].$edgeDSoptions."}";
+		if(!in_array($tmp,$edgesT)){
+			array_push($edgesT,$tmp);
 		}
 		//echo sizeof($newids);
 		//echo "<br/>";
@@ -168,8 +173,37 @@ for($i = 1; $i < sizeof($allids); $i++){
 	$tmp = "{id: ".$allids[$i].", label: '".$allnames[$i]."', level: ".$alllevels[$i]."".$nodeoptions."}";
 	array_push($nodes,$tmp);
 }
+$allowners = array();
+$alltags = array();
+for($i = 0; $i < sizeof($allids); $i++){
+	//owner
+	$srownerX = sqlsrv_query( $conn, $osql, array(&$allids[$i]));
+	$ownerX = sqlsrv_fetch_array($srownerX);
+	$tmp = "{id: 'O".$ownerX["ID"]."', label: '".$ownerX["Name"]."', level: ".$alllevels[$i]."".$nodeuseroptions."}";
+	if(!in_array($ownerX["ID"],$allowners)){
+		array_push($nodes,$tmp);
+	}
+	$tmp = "{from: 'O".$ownerX["ID"]."', to: ".$allids[$i].$edgeoptions."}";
+	array_push($edges,$tmp);
+	array_push($allowners,$ownerX["ID"]);
+	//tags
+	$srtagsX = sqlsrv_query( $conn, $tsql, array(&$allids[$i]));
+	while($tagX = sqlsrv_fetch_array($srtagsX)) {
+		if(!in_array($tagX["Name"].$tagX["Value"],$alltags)){
+			$tmp = "{id: 'T".$tagX["Name"]."&Value=".$tagX["Value"]."', label: '".$tagX["Name"].": ".$tagX["Value"]."', level: ".$alllevels[$i]."".$nodetagoptions."}";
+			array_push($nodes,$tmp);
+			array_push($alltags,$tagX["Name"].$tagX["Value"]);
+		}
+		$tmp = "{from: 'T".$tagX["Name"]."&Value=".$tagX["Value"]."', to: ".$allids[$i].", title: '".$tagX["Name"]."'".$edgeoptions."}";
+		array_push($edges,$tmp);
+	}
+}
+for($i = 0; $i < sizeof($edgesT); $i++){
+	$tmp = $edgesT[$i];
+	array_push($edges,$tmp);
+}
 
-
+ 
 
 ?>
 
@@ -181,22 +215,61 @@ for($i = 1; $i < sizeof($allids); $i++){
 
 <script type="text/javascript">
 	var options = {
+		edges: {
+			arrows:'to',
+			arrowStrikethrough: false
+		},
 		groups: {
 			datasets: {
 				shape:'icon',
+				size: 50,
+				mass: 6,
 				icon: {
 					face: 'FontAwesome',
 					code: '\uf187',
 					size: 50,
 					color: '#266c8e'
 				}
+			},
+			users: {
+				shape:'icon',
+				size: 50,
+				mass: 8,
+				icon: {
+					face: 'FontAwesome',
+					code: '\uf0f0',
+					size: 50,
+					color: '#323d43'
+				}
+			},
+			tags: {
+				shape:'icon',
+				size: 50,
+				mass: 4,
+				icon: {
+					face: 'FontAwesome',
+					code: '\uf02b',
+					size: 50,
+					color: '#323d43'
+				}
 			}
 		},
+		interaction: {
+			hover: true
+		},
+		physics: {
+			repulsion: {
+				nodeDistance: 500
+			},
+			hierarchicalRepulsion: {
+				nodeDistance: 10
+			}
+		}/*,
 		layout: {
 			hierarchical: {
 				direction: 'UD'
 			}
-		}
+		}*/
 	};
 
     // create an array with nodes
@@ -225,7 +298,13 @@ for($i = 1; $i < sizeof($allids); $i++){
 	network.on("doubleClick", function(params) {
 		params.event = "[original event]";
 		if(params.nodes != []){
-			window.location.href = "../view.php?imgID=" + params.nodes[0];
+			if(typeof params.nodes[0] != "string"){
+				//user clicked on dataset
+				window.location.href = "../view.php?imgID=" + params.nodes[0];
+			}else if(params.nodes[0].charAt(0) === "T"){
+				//user clicked on tag
+				window.location.href = "../viewtag.php?Name=" + params.nodes[0].substring(1);
+			}
 		}
 	});
 	

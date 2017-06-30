@@ -138,22 +138,53 @@ include "_LayoutHeader.php";
 	<?php }else{ ?>
 	<div class="metadata fw">
 	<?php } ?>
-	<?php
-	/* Display the results of the query. */
-	echo "<b>Name:</b> ".$row['Name']."<br/>";
-	echo "<b>Date:</b> ".$row['Date']->format("d/m/Y H:i:s")."<br/>";
-	echo "<b>Description:</b> <i>".$row['Description']."</i><br/>";
-	echo "<b><i class=\"fa fa-user\"></i> Owner:</b> ".$owner['Name']."<br/>"; //." - you are ".$authstage."<br/>";
-	?>
-	<i class="fa fa-tags"></i> <b>Tags:</b> 
-	<ul class="fa-ul" style="margin-top:0px;">
-		<?php
-		/* Retrieve and display the results of the query. */
-		while($tag = sqlsrv_fetch_array($srtags)) {
-			echo "<li><i class=\"fa-li fa fa-tag\"></i>".$tag['Name'].": <i><a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Value']."</a></i></li>";
-		}
-		?>
-	</ul>
+	<div id="basicinfo" style="margin-left:25px;">
+		<b>Name:</b> <?php echo $row['Name'];?><br/>
+		<b>Date:</b> <?php echo $row['Date']->format("d/m/Y H:i:s");?><br/>
+		<b>Description:</b> <i><?php echo $row['Description'];?></i><br/>
+		<b><i class="fa fa-user-md"></i>   Owner:</b> <?php echo $owner['Name']; ?><br/>
+		<?php //echo " - you are ".$authstage."<br/>"; ?>
+	</div>
+	<div id="tagtree">
+		<ul class="fa-ul">
+			<li data-jstree='{"opened":true, "type":"root"}'>
+				<i class="fa-li fa fa-tags"></i> <b>Tags:</b>
+				<ul class="fa-ul" style="margin-top:0px;">
+					<?php
+					/* Retrieve and display the results of the query. */
+					while($tag = sqlsrv_fetch_array($srtags)) {
+						echo "<li onclick='window.location.href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\";'><a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Name'].": ".$tag['Value']."</a></li>";
+						//echo "<li>".$tag['Name']."<a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".": ".$tag['Value']."</a></li>";
+					}
+					?>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<script>
+	$(function (){
+		$('#tagtree').jstree({
+			'core' : {
+				'themes' : {
+					'dots' : false,
+				}
+			},
+			'force_text' : true,
+			'conditionalselect' : function(node, event){
+				return false;
+			},
+			'types' : {
+				'default' : {
+					"icon" : "fa fa-tag"
+				},
+				'root' : {
+					"icon" : "fa fa-tags"
+				}
+			},
+			'plugins' : [ 'types','conditionalselect' ]
+		});
+	})
+	</script>
 
 	<?php 
 if( !$hasPreview && !$hasSTL || $authstage == "Basic" || $datasetDeleted){ 
@@ -167,22 +198,64 @@ if( !$hasPreview && !$hasSTL || $authstage == "Basic" || $datasetDeleted){
 <?php 
 	if(!$datasetDeleted && ($authstage == "Basic" || $authstage == "Viewer" || $authstage == "Writer" || $authstage == "Owner")){ 
 ?>
-		<i class=" fa fa-files-o"></i> <b>Files:</b>
+		
 		<?php include "App_Data/ListFiles.php"; ?>
-		<br/>
 <?php 
 	} 
 ?>
-		<i class=" fa fa-link"></i> <b>Related Datasets:</b><br/>
-		<ul class="fa-ul" style="margin-top:0px;">
-			<li><i><a href="../netgraph.php?imgID=<?php echo $imageID;?>">(view network)</a></i></li>
-			<?php while($item = sqlsrv_fetch_array($srparents)) {
-				echo "<li><i class=\"fa-li fa fa-male\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
-			}?>
-			<?php while($item = sqlsrv_fetch_array($srchilds)) {
-				echo "<li><i class=\"fa-li fa fa-child\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a></li>";
-			}?>
+
+
+	<div id="relatree">
+		<ul class="fa-ul">
+			<li data-jstree='{"opened":true, "type":"root"}'>
+				<i class=" fa fa-link"></i> <b>Related Datasets:</b><br/>
+				<ul class="fa-ul" style="margin-top:0px;">
+					<li onclick='window.location.href = "../netgraph.php?imgID=<?php echo $imageID;?>";'>(view network)</a></li>
+					<?php while($item = sqlsrv_fetch_array($srparents)) { ?>
+					<li data-jstree='{"type":"parent"}' onclick='window.location.href = "view.php?imgID=<?php echo $item['ExperimentID'];?>";' >
+					<?php echo "<i class=\"fa-li fa fa-male\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a>"; ?>
+					</li>
+					<?php }?>
+					<?php while($item = sqlsrv_fetch_array($srchilds)) { ?>
+					<li data-jstree='{"type":"child"}' onclick='window.location.href = "view.php?imgID=<?php echo $item['ExperimentID'];?>";' >
+					<?php echo "<i class=\"fa-li fa fa-child\"></i> <a href=\"view.php?imgID=".$item['ExperimentID']."\" >".$item['Name']."</a>"; ?>
+					</li>
+					<?php }?>
+				</ul>
+			</li>
 		</ul>
+	</div>
+	<script>
+	$(function (){
+		$('#relatree').jstree({
+			'core' : {
+				'themes' : {
+					'dots' : false,
+				}
+			},
+			'force_text' : true,
+			'conditionalselect' : function(node, event){
+				return false;
+			},
+			'types' : {
+				'default' : {
+					"icon" : "fa fa-line-chart"
+				},
+				'root' : {
+					"icon" : "fa fa-link"
+				},
+				'child' : {
+					"icon" : "fa fa-child"
+				},
+				'parent' : {
+					"icon" : "fa fa-male"
+				}
+			},
+			'plugins' : [ 'types', 'conditionalselect' ]
+		});
+	})
+	</script>
+	<br/>
 	</div>
 
 <?php 
