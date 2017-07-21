@@ -4,3 +4,4 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 <script src="/js/messages.js" type="text/javascript"></script>
+<script src="/js/jquery.mjs.nestedSortable.js" type="text/javascript"></script>

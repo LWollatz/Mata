@@ -151,7 +151,7 @@ while (sizeof($savedparts)>0){
 					"icon" : "fa fa-file-o"
 				},
 				'folder' : {
-					"icon" : "fa fa-folder"
+					"icon" : "fa fa-folder-open"
 				},
 				'file' : {
 					"icon" : "fa fa-file-o"

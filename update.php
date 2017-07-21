@@ -1,19 +1,92 @@
 <?php
 	include "_LayoutDatabase.php"; 
+	$errmsg = "";
+    $infomsg = "";
     if( $conn === false )  
     {   
         die( print_r( sqlsrv_errors(), true));  
     }
 	$imageID = (int)$_POST["ID"];
 	include "_SecurityCheck.php";
-	if($authstage != "Owner" && $authstage != "Writer"){
+	if($authstage != "Owner" && $authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
 		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
-/*echo $_POST['Save'];
-echo $_POST['Link'];
-echo $_POST['Un-Link'];*/
+
+function updateParentTag($conn,$ChildID,$ParentID){
+	$querytln="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameterLinks]
+      ( [ParentParameterID], [LinkedParameterID] )   
+      VALUES (?, ? )";
+	$querytld="DELETE FROM [MEDDATADB].[dbo].[ExperimentParameterLinks]
+      WHERE [LinkedParameterID] = ?";
+	$removeold = sqlsrv_prepare( $conn, $querytld, array( &$ChildID));
+	if( sqlsrv_execute( $removeold)){
+		$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any old link";
+	}
+	if($ParentID != -1){
+		$addnew = sqlsrv_prepare( $conn, $querytln, array( &$ParentID, &$ChildID));	
+		if( sqlsrv_execute( $addnew))
+		{
+			if( sqlsrv_rows_affected( $addnew) > 0)
+			{
+				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $addnew);
+				$GLOBALS["infomsg"] = $GLOBALS["infomsg"].'Link updated. (rows affected: '.sqlsrv_rows_affected( $addnew).')<br/>';
+			}
+			else
+			{
+				echo "Statement executed but no rows changed.\n <br />";
+				$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
+			}
+		}
+		else
+		{
+			echo "Error in executing statement.\n";
+			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (add parent tag"." C>".$ChildID." P>".$ParentID.")<br/>";
+			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+			die( print_r( sqlsrv_errors(), true));
+		}
+	}
+}
+
+function deleteTag($imageID,$conn,$tagID){
+	$querytd="DELETE FROM [MEDDATADB].[dbo].[ExperimentParameters]
+      WHERE [ID]= ? ";
+	$querytlcd="DELETE FROM [MEDDATADB].[dbo].[ExperimentParameterLinks]
+      WHERE [LinkedParameterID] = ?";
+	$querytlpd="DELETE FROM [MEDDATADB].[dbo].[ExperimentParameterLinks]
+      WHERE [ParentParameterID] = ?";
+	$deleteLinks = sqlsrv_prepare( $conn, $querytlcd, array( &$tagID));
+	if( sqlsrv_execute( $deleteLinks)){
+		$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any child links";
+	}
+	$deleteLinks = sqlsrv_prepare( $conn, $querytlpd, array( &$tagID));
+	if( sqlsrv_execute( $deleteLinks)){
+		$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any parent links";
+	}
+	$QdeleteTag = sqlsrv_prepare( $conn, $querytd, array( &$tagID));
+	if( sqlsrv_execute( $QdeleteTag ))
+	{
+		if( sqlsrv_rows_affected( $QdeleteTag ) > 0)
+		{
+			echo "Tag ".$tagID." removed.\n <br />".sqlsrv_rows_affected( $QdeleteTag );
+			$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."Tag ".$tagID." removed. (rows affected: ".sqlsrv_rows_affected( $QdeleteTag ).")<br/>";
+		}
+		else
+		{
+			echo "Statement executed but no rows changed.\n <br />";
+			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
+		}
+		updateParentTag($conn,$tagID,-1);
+	}
+	else
+	{
+		echo "Error in executing statement (Delete Tag ".$tagID.").\n";
+		$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (Delete Tag ".$tagID.")<br/>";
+		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+		die( print_r( sqlsrv_errors(), true));
+	}
+}
 
 if($_POST['Save']){
     /*get basic post results*/
@@ -38,20 +111,33 @@ if($_POST['Save']){
     $query="UPDATE [MEDDATADB].[dbo].[Experiments]
       SET [Description] = ?  
       WHERE [ID]= ? ";
+	  
+	$queryt="SELECT [Name], [Unit], [Type]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  WHERE [ID] = ?";
 
     $querytn="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameters]
-      ( [ExperimentID], [Name], [Value] )   
-      VALUES (?, ?, ? )";
+      ( [ExperimentID], [Name], [Value], [Position] )   
+      VALUES (?, ?, ?, ? )";
+	  
+	$querytnc="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameters]
+      ( [ExperimentID], [Name], [Value], [Unit], [Type]  )   
+      VALUES (?, ?, ?, ?, ? )";
+	  
+	
 
     $querytu="UPDATE [MEDDATADB].[dbo].[ExperimentParameters]
-      SET [Value] = ?
+      SET [Name] = ?, [Value] = ?, [Position] = ?
+      WHERE [ID]= ? ";
+	 
+	$querythu="UPDATE [MEDDATADB].[dbo].[ExperimentParameters]
+      SET [Name] = ?, [Position] = ?
       WHERE [ID]= ? ";
     
     $querytd="DELETE FROM [MEDDATADB].[dbo].[ExperimentParameters]
       WHERE [ID]= ? ";
 
-    $errmsg = "";
-    $infomsg = "";
+    
     
 
     /*** UPDATE DESCRIPTION ***/
@@ -80,86 +166,94 @@ if($_POST['Save']){
 
     
     /***UPDATE TAGS***/
-    /*get current tags for possible update or delete*/
+	/*get new tags and bring them into shape*/
+	$ud_orderstr = $_POST["ud_order"];
+	$ud_orderp = explode("&",$ud_orderstr);
+	$ud_order = array();
+	$cntr = 0;
+	foreach ($ud_orderp as $tagfid) {
+		$tag = array();
+		$parts = explode("=",$tagfid);
+		$tag["parentID"] = $parts[1];
+		if($tag["parentID"] == "null"){
+			$tag["parentID"] = -1;
+		}
+		$temp = $parts[0];
+		$temp = substr($temp, 3);
+		$temp = substr($temp, 0, -1);
+		$tag["ID"] = $temp;
+		$tag["name"] = $_POST["ud_name".$temp];
+		$tag["value"] = $_POST["ud_value".$temp];
+		$tag["position"] = $cntr;
+		$ud_order[$tag["ID"]] = $tag;
+		$cntr = $cntr + 1;
+	}
+	
+	/*get current tags for possible update or delete*/
+	//need to do this before inserting new one as to not accidentally delete the new tag
     $tsql = "SELECT *
       FROM [MEDDATADB].[dbo].[ExperimentParameters]
       WHERE [ExperimentID] = ?";
-    $tsql = str_replace("?", $imageID, $tsql);
-    $srtags = sqlsrv_query( $conn, $tsql);
-    /*iterate over tags*/
-	while($tag = sqlsrv_fetch_array($srtags)) {
-		$ud_value = $_POST["ud_value".$tag['ID']];
-		if( $ud_value != ""){
-			$updateTag = sqlsrv_prepare( $conn, $querytu, array( &$ud_value, &$tag['ID']));
-			if( sqlsrv_execute( $updateTag ))
-			{
-				if( sqlsrv_rows_affected( $updateTag ) > 0)
-				{
-					echo "Statement executed.\n <br />".sqlsrv_rows_affected( $updateTag );
-					$infomsg = $infomsg."Tag ".$tag['Name']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")<br/>";
-				}
-				else
-				{
-					echo "Statement executed but no rows changed.\n <br />";
-					$errmsg = $errmsg."No changes made<br/>";
-				}
-			}
-			else
-			{
-				echo "Error in executing statement.\n";
-				$errmsg = $errmsg."error in executing statement<br/>";
-				header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-				die( print_r( sqlsrv_errors(), true));
-			}
-		}else{
-			$deleteTag = sqlsrv_prepare( $conn, $querytd, array( &$tag['ID']));
-			if( sqlsrv_execute( $deleteTag ))
-			{
-				if( sqlsrv_rows_affected( $deleteTag ) > 0)
-				{
-					echo "Tag ".$tag['Name']." removed.\n <br />".sqlsrv_rows_affected( $deleteTag );
-					$infomsg = $infomsg."Tag ".$tag['Name']." removed. (rows affected: ".sqlsrv_rows_affected( $deleteTag ).")<br/>";
-				}
-				else
-				{
-					echo "Statement executed but no rows changed.\n <br />";
-					$errmsg = $errmsg."No changes made<br/>";
-				}
-			}
-			else
-			{
-				echo "Error in executing statement.\n";
-				$errmsg = $errmsg."error in executing statement<br/>";
-				header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-				die( print_r( sqlsrv_errors(), true));
-			}
-		}
+    //$tsql = str_replace("?", $imageID, $tsql);
+    $srtags = sqlsrv_query( $conn, $tsql, array(&$imageID) );
+	
+	/* INSERT NEW */
+	$tag = $ud_order["new"];
+	$newID = $tag["parentID"];
+	if($tag["name"] != ""){
+		//insert and get id
+		$queryout = sqlsrv_query( $conn, $querytn."; SELECT SCOPE_IDENTITY() AS 'ID';", array( &$imageID, &$tag["name"], &$tag["value"], &$tag["position"]));
+		sqlsrv_next_result($queryout);
+		$temp = sqlsrv_fetch_array($queryout);
+		$newID = $temp['ID'];
+		$errmsg = $errmsg." ADD ".$newID."<br/>";
+		updateParentTag($conn,$newID,$tag["parentID"]);
 	}
 	
-	/***INSERT NEW TAG***/
-    if( $ud_newkey != "" && $ud_newvalue != ""){
-		$insertTag = sqlsrv_prepare( $conn, $querytn, array( &$imageID, &$ud_newkey, &$ud_newvalue));
-		if( sqlsrv_execute( $insertTag ))
-		{
-			if( sqlsrv_rows_affected( $insertTag ) > 0)
-			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertTag );
-				$infomsg = $infomsg."Tag added. (rows affected: ".sqlsrv_rows_affected( $insertTag ).")<br/>";
+    
+	/*iterate over and update or remove old tags*/
+	while($tag = sqlsrv_fetch_array($srtags)) {
+		if(array_key_exists($tag['ID'],$ud_order)){
+			//TAG STILL THERE => ONLY UPDATE
+			$errmsg = $errmsg."UPDATE ".$tag['ID']."<br/>";
+			$tagnew = $ud_order[$tag['ID']];
+			if(!$tagnew['value']){
+				$tagnew['value'] = $tag['Value'];
 			}
-			else
-			{
-				echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made<br/>";
+			if(!$tagnew['name']){
+				$tagnew['name'] = $tag['Name'];
 			}
+			if($tagnew['parentID'] == "new"){
+				$tagnew['parentID'] = $newID;
+			}
+			updateParentTag($conn,$tag['ID'],$tagnew['parentID']);
+			$updateTag = sqlsrv_prepare( $conn, $querytu, array( &$tagnew['name'], &$tagnew['value'], &$tagnew['position'], &$tag['ID']));
+			if( sqlsrv_execute( $updateTag ))
+				{
+					if( sqlsrv_rows_affected( $updateTag ) > 0)
+					{
+						echo "Statement executed.\n <br />".sqlsrv_rows_affected( $updateTag );
+						$infomsg = $infomsg."Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")<br/>";
+					}
+					else
+					{
+						echo "Statement executed but no rows changed.\n <br />";
+						$errmsg = $errmsg."No changes made<br/>";
+					}
+				}
+				else
+				{
+					echo "Error in executing statement (Update Tag Header).\n";
+					$errmsg = $errmsg."error in executing statement (Update Tag Header)<br/>";
+					header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+					die( print_r( sqlsrv_errors(), true));
+				}
+		}else{
+			//TAG NOT THERE => DELETE
+			$errmsg = $errmsg."DELETE ".$tag['ID']."<br/>";
+			deleteTag($imageID,$conn,$tag['ID']);
 		}
-		else
-		{
-			echo "Error in executing statement.\n";
-		    $errmsg = $errmsg."error in executing statement<br/>";
-			header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
-    }
+	}
 	
 	/***UPDATE PREVIEWER***/
 	if (file_exists($relpath)){
@@ -269,7 +363,8 @@ if($_POST['Save']){
   AND NOT [Name] = ANY (
     SELECT [Name]
     FROM [MEDDATADB].[dbo].[ExperimentParameters]
-    WHERE [ExperimentID] = ? )";
+    WHERE [ExperimentID] = ? )
+  ORDER BY [Position]";
 	
 	$queryta="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameters]
       ( [ExperimentID], [Name], [Value] ,[Unit], [Type] )   
@@ -312,6 +407,11 @@ if($_POST['Save']){
 
 	
 }else if($_POST['UsrAdd']){
+	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
+		$errmsg = $errmsg."Access Denied!";
+		$infomsg = $infomsg.$authuser['Username'].$authstage;
+		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST["NewUSRID"];
 	$userPermission = (int)$_POST["NewUSRprm"];
@@ -358,6 +458,11 @@ if($_POST['Save']){
 
 	
 }else if(isset($_POST['UsrDel']) && $_POST['UsrDel'] !== ""){
+	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
+		$errmsg = $errmsg."Access Denied!";
+		$infomsg = $infomsg.$authuser['Username'].$authstage;
+		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST['UsrDel'];
 	

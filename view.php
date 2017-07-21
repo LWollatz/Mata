@@ -38,10 +38,30 @@ $osql = "SELECT TOP 1 [MEDDATADB].[dbo].[Users].[ID]
   ON [MEDDATADB].[dbo].[Users].[UserID] = [MEDDATADB].[dbo].[Experiments].[FileSystemUserID]
   WHERE [MEDDATADB].[dbo].[Experiments].[ID] = ?";
 
-$tsql = "SELECT *
+/* $tsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] = @1";
-$tsql = str_replace("@1", $imageID, $tsql);
+  WHERE [ExperimentID] = ?";*/
+  
+$tsql = "SELECT
+  [ExperimentParameters].[ID]
+, [ExperimentParameters].[Name]
+, [ExperimentParameters].[Value]
+, [ExperimentParameters].[Position]
+, [LinkC].[ParentParameterID]
+, COUNT([LinkP].[LinkedParameterID]) AS 'LinkedParameterID'
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkC]
+  ON [LinkC].[LinkedParameterID] = [ExperimentParameters].[ID]
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkP]
+  ON [LinkP].[ParentParameterID] = [ExperimentParameters].[ID]
+  WHERE [ExperimentParameters].[ExperimentID] = ?
+  GROUP BY [ExperimentParameters].[ID],
+  [ExperimentParameters].[Name],
+  [ExperimentParameters].[Value], 
+  [ExperimentParameters].[Position], 
+  [LinkC].[ParentParameterID]
+  ORDER BY [ExperimentParameters].[Position]";
+//$tsql = str_replace("@1", $imageID, $tsql);
 
 $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
@@ -68,7 +88,7 @@ $ecsql = "SELECT [ParentExperimentID]
 
 
 $srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
-$srtags = sqlsrv_query( $conn, $tsql); 
+$srtags = sqlsrv_query( $conn, $tsql, array(&$imageID)); 
 $srfiles = sqlsrv_query( $conn, $fsql, array(&$imageID));
 $srowner = sqlsrv_query( $conn, $osql, array(&$imageID));
 $srparents = sqlsrv_query( $conn, $epsql, array(&$imageID));
@@ -125,7 +145,7 @@ if(file_exists($relpath."/.previews/infoSTL.txt")){
 <body>
 
 <?php 
-if($authstage == "Owner" || $authstage == "Writer" ){
+if($authstage == "Owner" || $authstage == "Writer" || $authuser['Username'] == "Administrator"){
 	$MenuEntries = '<a href="edit.php?imgID='.$imageID.'"><i class="fa fa-edit"></i> Edit</a>';
 }
 include "_LayoutHeader.php"; 
@@ -151,15 +171,55 @@ include "_LayoutHeader.php";
 				<i class="fa-li fa fa-tags"></i> <b>Tags:</b>
 				<ul class="fa-ul" style="margin-top:0px;">
 					<?php
+					$level = 1;
+					$open = false;
+					$levels = array();
 					/* Retrieve and display the results of the query. */
 					while($tag = sqlsrv_fetch_array($srtags)) {
-						echo "<li onclick='window.location.href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\";'><a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Name'].": ".$tag['Value']."</a></li>";
+						if(array_key_exists($tag['ParentParameterID'],$levels)){
+							$levels[$tag['ID']] = $levels[$tag['ParentParameterID']] + 1;
+						}else{
+							$levels[$tag['ID']] = 1;
+						}
+						while ($level > $levels[$tag['ID']]){
+							echo "</ul></li>";
+							$level = $level - 1;
+							$open = false;
+						}
+						if($open && $level == $levels[$tag['ID']]){
+							echo "</li>";
+							$open = false;
+						}
+						while ($level < $levels[$tag['ID']]){
+							echo "<ul class=\"fa-ul\">";
+							$level = $level + 1;
+						} 
+						
+						if($tag['LinkedParameterID'] == 0){
+							echo "<li onclick='window.location.href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\";'><i class=\"fa fa-tag fa-fw\"></i> <a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".$tag['Name'].": ".$tag['Value']."</a>";
+						}else{
+							echo "<li data-jstree='{\"type\":\"header\"}'><i class=\"fa fa-tags fa-fw\"></i> ".$tag['Name'].":".$tag['Value'];
+						}
+						$open = true;
+						
+						$level = $levels[$tag['ID']];
 						//echo "<li>".$tag['Name']."<a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".": ".$tag['Value']."</a></li>";
+					}
+					echo "</li>";
+					while ($level > 1){
+						echo "</ul></li>";
+						$level = $level - 1;
+						$open = false;
+					}
+					if($open){
+						echo "</li>";
+						$open = false;
 					}
 					?>
 				</ul>
 			</li>
 		</ul>
+		
 	</div>
 	<script>
 	$(function (){
@@ -178,6 +238,9 @@ include "_LayoutHeader.php";
 					"icon" : "fa fa-tag"
 				},
 				'root' : {
+					"icon" : "fa fa-tags"
+				},
+				'header' : {
 					"icon" : "fa fa-tags"
 				}
 			},

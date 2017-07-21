@@ -287,6 +287,7 @@ div.files {
   border-left-color: #323d43;
   border-left-style: solid;
 }
+
 .btn {
   border: 0px;
   border-color: #000000;
@@ -474,6 +475,39 @@ div .floatspace {
 #content table.list tr:first-child a:hover{
 	color: #ffffff;
 }
+
+/*nested sortable*/
+.placeholder {
+	outline: 1px dashed #323d43;
+}
+.dragable{
+	margin: 9px;
+}
+.dragable > span{
+	padding: 6px;
+	border-width: 3px;
+	border-color: #266c8e;
+	border-style: solid;
+	/*background-color: #266c8e;*/
+	color: #000000;
+}
+.dragable span .deleteMenu:hover{
+	color: #f00f2c;
+}
+.dragable span .dragMenu{
+	color: #266c8e;
+}
+
+
+li.mjs-nestedSortable-branch ul{
+	padding-left: 0;
+	margin-left: 2.14285714em;
+	list-style-type: none;
+}
+
+
+
+
 
 .treeli li{
 	word-wrap: break-word;

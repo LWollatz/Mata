@@ -9,7 +9,7 @@ $imageID = (int)$_GET['imgID'];
 
 /* GET AUTHORIZATION */
 include "_SecurityCheck.php";
-if($authstage != "Owner" && $authstage != "Writer"){
+if($authstage != "Owner" && $authstage != "Writer" && $authuser['Username'] != "Administrator"){
 	$ErrorMsg = $ErrorMsg."You do not have permission to edit this dataset";
 	header($_SERVER["SERVER_PROTOCOL"]." 403 Forbidden");
 	header("Location: /error.php?errcode=403");
@@ -21,10 +21,25 @@ $isql = "SELECT TOP 1 *
   WHERE [ID] = ?";
 /*$isql = str_replace("@1", $imageID, $isql);*/
 
-$tsql = "SELECT *
+$tsql = "SELECT
+  [ExperimentParameters].[ID]
+, [ExperimentParameters].[Name]
+, [ExperimentParameters].[Value]
+, [ExperimentParameters].[Unit]
+, [ExperimentParameters].[Type]
+, [ExperimentParameters].[Position]
+, [ExperimentParameterLinks].[ParentParameterID]
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] = ?";
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] 
+  ON [ExperimentParameterLinks].[LinkedParameterID] = [ExperimentParameters].[ID]
+  WHERE [ExperimentParameters].[ExperimentID] = ?
+  ORDER BY [ExperimentParameters].[Position]";
 /*$tsql = str_replace("@1", $imageID, $tsql);*/
+
+$tusql = "SELECT DISTINCT [Name]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  WHERE [ExperimentID] = ?
+  ORDER BY [Name] ASC";
 
 $tnsql = "SELECT [Name], COUNT(*) AS Count
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
@@ -64,7 +79,7 @@ $elsql = "SELECT [ParentExperimentID]
 
 $srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
 $srtags = sqlsrv_query( $conn, $tsql, array(&$imageID)); /*there must be a more efficient way, but how do I duplicate the result of a query?*/
-$srtagsPre = sqlsrv_query( $conn, $tsql, array(&$imageID));
+$srtagsPre = sqlsrv_query( $conn, $tusql, array(&$imageID));
 $tagkeys = sqlsrv_query( $conn, $tnsql, array(&$imageID));
 $tagvalues = sqlsrv_query( $conn, $tvasql);  
 $parents = sqlsrv_query( $conn, $elsql, array(&$imageID));
@@ -116,6 +131,9 @@ while($key = sqlsrv_fetch_array($srtagsPre)) {
 	$( "#tags" ).autocomplete({
 		source: availableTags
 	});
+	$( ".suggesttagnames" ).autocomplete({
+		source: availableTags
+	});
 } );
 
 $( function() {
@@ -128,8 +146,16 @@ while($key = sqlsrv_fetch_array($tagvalues)) {
 	$( "#tagvalues" ).autocomplete({
 		source: availableTagValues
 	});
+	$( ".suggesttagvalues" ).autocomplete({
+		source: availableTagValues
+	});
 } );
 
+
+function triggerorder(){
+  serialized = $('ul.sortable').nestedSortable('serialize');
+  $('#tagsorder').val(serialized+"");
+}
 /*$( function() {
 	var availableExperiments = [
 < ? p h p 
@@ -173,7 +199,7 @@ include "_LayoutHeader.php";
 ?> 
 
 <div id="content">
-<form action="update.php" accept-charset="utf-8" method="post" id="mainform">
+<form onsubmit="triggerorder();" action="update.php" accept-charset="utf-8" method="post" id="mainform">
 
 <div class="floatspace">
 <div class="btngroup">
@@ -205,27 +231,115 @@ include "_LayoutHeader.php";
 </div>
 
 <div class="container">
-	<table>
-	<tr><td class="theader">Tags:</td><td></td></tr>
-	<tr><td colspan=2>(to delete a tag, leave the value empty)</td></tr>
-	<?php
-	/* Retrieve and display the results of the query. */
-	//$tag = sqlsrv_fetch($srtags, SQLSRV_SCROLL_FIRST);
-	while($tag = sqlsrv_fetch_array($srtags)) {?>
-		<tr>
-			<td><?php echo $tag['Name']; ?>:</td>
-			<td><i><input type="text" name="ud_value<?php echo $tag['ID']; ?>" value="<?php echo $tag['Value'];?>"></i></td>
-		</tr>
-	<?php }
-	?>
-	<tr>
-		<td><text class="ui-widget">
-		  <input id="tags" name="ud_newkey">
-		</text>:</td>
-		<td><input id="tagvalues" type="text" name="ud_newvalue" value=""></td>
-	</tr>
-	</table>
+	<i class="fa-li fa fa-tags"></i> <b>Tags:</b>
+	<ul class="fa-ul sortable" style="margin-top:0px;">
+		<?php
+		$level = 1;
+		$open = false;
+		$levels = array();
+		/* Retrieve and display the results of the query. */
+		while($tag = sqlsrv_fetch_array($srtags)) {
+			
+			if(array_key_exists($tag['ParentParameterID'],$levels)){
+				$levels[$tag['ID']] = $levels[$tag['ParentParameterID']] + 1;
+			}else{
+				$levels[$tag['ID']] = 1;
+			}
+			
+			while ($level > $levels[$tag['ID']]){
+				echo "</ul></li>";
+				$level = $level - 1;
+				$open = false;
+			}
+			if($open && $level == $levels[$tag['ID']]){
+				echo "</li>";
+				$open = false;
+			}
+			while ($level < $levels[$tag['ID']]){
+				echo "<ul class=\"fa-ul\">";
+				$level = $level + 1;
+			} ?>
+			
+			<li id="ud_<?php echo $tag['ID']; ?>">
+			<div class="dragable"> 
+			<span>
+			<span class="dragMenu" title="Drag to reorder item." data-id="<?php echo $tag['ID']; ?>">
+				<i class="fa fa-li fa-ellipsis-v fa-fw"></i>
+			</span>
+			<?php if($tag['Value'] != ""){?>
+				<span title="Drag to reorder item." data-id="<?php echo $tag['ID']; ?>">
+					<?php echo $tag['Name']; ?>:
+					<i><input type="text" name="ud_value<?php echo $tag['ID']; ?>" value="<?php echo $tag['Value'];?>" onchange="triggerorder();" class="suggesttagvalues"></i>
+				</span>
+			<?php }else{?>
+				<span title="Drag to reorder item." data-id="<?php echo $tag['ID']; ?>">
+					<input type="text" name="ud_name<?php echo $tag['ID']; ?>" value="<?php echo $tag['Name'];?>" onchange="triggerorder();" class="suggesttagnames">
+				</span>
+			<?php }?>
+			<span title="Click to delete item." data-id="<?php echo $tag['ID']; ?>" class="deleteMenu fa fa-close">
+				<span></span>
+			</span>
+			</span>
+			</div>
+			<?php
+			$open = true;
+			
+			$level = $levels[$tag['ID']];
+			//echo "<li>".$tag['Name']."<a href=\"viewtag.php?Name=".$tag['Name']."&Value=".$tag['Value']."\" >".": ".$tag['Value']."</a></li>";
+		}
+		echo "</li>";
+		while ($level > 1){
+			echo "</ul></li>";
+			$level = $level - 1;
+			$open = false;
+		}
+		if($open){
+			echo "</li>";
+			$open = false;
+		}
+		?>
+		<li id="ud_new">
+			<div class="dragable">
+			<span>
+			<span class="dragMenu" title="Drag to reorder item." data-id="new">
+				<i class="fa fa-li fa-ellipsis-v fa-fw"></i>
+			</span>
+			<span title="Drag to reorder item." data-id="new">
+				<input  id="tags" type="text" name="ud_namenew" value="" onchange="triggerorder();">:
+				<i><input id="tagvalues" type="text" name="ud_valuenew" value="" onchange="triggerorder();"></i>
+			</span>
+			</span>
+			</div>
+		</li>
+	</ul>
+	<input type="hidden" id="tagsorder" name="ud_order" value="" >
 </div>
+<script>
+	$(document).ready(function(){
+		//https://github.com/ilikenwf/nestedSortable
+		$('.sortable').nestedSortable({
+			handle: 'div',
+			forcePlaceholderSize: true,
+			opacity: .6,
+			placeholder: 'placeholder',
+			items: 'li',
+			listType: 'ul',
+			tabSize: 30,
+			tolerance: 'pointer',
+			toleranceElement: '> div',
+			isTree: true,
+			stop: function( event, ui ) {
+				triggerorder();
+			}
+		});
+		$('.deleteMenu').click(function(){
+			var id = $(this).attr('data-id');
+			$('#ud_'+id).remove();
+			triggerorder();
+		});
+		triggerorder();
+	});
+</script>
 
 <?php if (file_exists($relpath."/.previews/infoJSON.txt") && !$datasetDeleted){ ?>
 <div class="container">
@@ -416,8 +530,7 @@ while($key = sqlsrv_fetch_array($experiments)) {
     $( "#OriID" ).combobox();
   } );
 </script>
-
-<?php if($authstage == "Owner"){ ?>
+<?php if($authstage == "Owner" || $authuser['Username'] != "Administrator"){ ?>
 <div class="container">
 <?php
 

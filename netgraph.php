@@ -40,11 +40,74 @@ $csql = "SELECT [ParentExperimentID]
   LEFT JOIN [MEDDATADB].[dbo].[Experiments] 
   ON [MEDDATADB].[dbo].[ExperimentLinks].[LinkedExperimentID] = [MEDDATADB].[dbo].[Experiments].[ID]
   WHERE [ParentExperimentID] = ?";
-  
-$tsql = "SELECT *
+
+//get tags for an experiment
+$tsql = "SELECT
+  [ExperimentParameters].[ID]
+, [ExperimentParameters].[Name]
+, [ExperimentParameters].[Value]
+, [ExperimentParameters].[Position]
+, [LinkC].[ParentParameterID]
+, COUNT([LinkP].[LinkedParameterID]) AS 'LinkedParameterID'
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] = ?";
-//$tsql = str_replace("@1", $imageID, $tsql);
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkC]
+  ON [LinkC].[LinkedParameterID] = [ExperimentParameters].[ID]
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkP]
+  ON [LinkP].[ParentParameterID] = [ExperimentParameters].[ID]
+  WHERE [ExperimentParameters].[ExperimentID] = ?
+  GROUP BY [ExperimentParameters].[ID],
+  [ExperimentParameters].[Name],
+  [ExperimentParameters].[Value], 
+  [ExperimentParameters].[Position], 
+  [LinkC].[ParentParameterID]
+  ORDER BY [ExperimentParameters].[Position]";
+
+//get children of a tag
+//describes the tag as key and value plus its children returns first nodeID inserted with this
+$tagtypes = array(); //list of all ids => corresponding descriptor
+$tagdescriptors = array(); //list of all descriptors
+function gettagdescriptor($tagX){
+	$tcsql = "SELECT
+  [ExperimentParameters].[ID]
+, [ExperimentParameters].[Name]
+, [ExperimentParameters].[Value]
+, [ExperimentParameters].[Position]
+, [LinkP].[ParentParameterID]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkP]
+  ON [LinkP].[LinkedParameterID] = [ExperimentParameters].[ID]
+  WHERE [LinkP].[ParentParameterID] = ?
+  ORDER BY [ExperimentParameters].[Position]";
+	if(array_key_exists($tagX['ID'],$GLOBALS["tagtypes"])){
+		//saved already -> just copy
+		return $GLOBALS["tagtypes"][$tagX['ID']];
+	}else{
+		//not saved -> need to create
+		$tagtype = "T;".$tagX["Name"].";".$tagX["Value"].";[";
+		$ctags = sqlsrv_query( $GLOBALS["conn"], $tcsql, array(&$tagX["ID"]));
+		while($childX = sqlsrv_fetch_array($ctags)) {
+			$temp = "{";
+			/*if(array_key_exists($childX['ID'],$GLOBALS["tagtypes"])){
+				//saved already -> just copy
+				$temp = $temp.$GLOBALS["tagtypes"][$childX['ID']];
+			}else{
+				//not saved -> need to create*/
+				$temp = $temp.gettagdescriptor($childX);
+			/*}*/
+			$temp = $temp."}";
+			$tagtype = $tagtype.$temp;
+		}
+		$tagtype = rtrim($tagtype,";");
+		$tagtype = $tagtype."]";
+		//save it for future use
+		$GLOBALS["tagtypes"][$tagX["ID"]] = $tagtype;
+		if(array_key_exists($tagtype,$GLOBALS["tagdescriptors"])){
+			array_push($GLOBALS["tagdescriptors"],$tagtype);
+		}
+		return $tagtype;
+	}
+	return $tagtype;
+}
 
 $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
@@ -86,11 +149,6 @@ if($row["ExperimentTypeID"] != 0){
 	<link href="css/vis.css" rel="stylesheet" type="text/css" />
 	<!--scripts-->
 	<?php include "_LayoutJavascript.php"; ?>
-	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/graphdracula/1.0.3/dracula.min.js" type="text/javascript"></script>-->
-	<!--<script src="js/dracula.min.js" type="text/javascript"></script>-->
-	<!--<script src="js/dracula/raphael-min.js" type="text/javascript"></script>
-	<script src="js/dracula/graffle.js" type="text/javascript"></script>
-	<script src="js/dracula/graph.js" type="text/javascript"></script>-->
 	<script src="js/vis.js" type="text/javascript"></script>
 	
 	
@@ -121,6 +179,7 @@ $edgeDSoptions = ", width:3, color:'#369aca', smooth:{enabled:'false'}";
 $nodeoptions = ", group: 'datasets'"; //, color:'#266c8e', font:{color:'#ffffff'}";
 $nodeuseroptions = ", group: 'users'";
 $nodetagoptions = ", group: 'tags'";
+$nodetaggoptions = ", group: 'grouptags'";
 $nodespecoptions = ", group: 'datasets', icon: {color:'#f00f2c'}"; //, color:'#f00f2c', font:{color:'#ffffff'}";
 
 while(sizeof($newids) > 0){
@@ -167,19 +226,20 @@ while(sizeof($newids) > 0){
 }
 
 $nodes = array();
-$tmp = "{id: ".$allids[0].", label: '".$allnames[0]."', level: ".$alllevels[0]."".$nodespecoptions."}";
+$tmp = "{id: ".$allids[0].", label: '<b>".$allnames[0]."</b>', level: ".$alllevels[0]."".$nodespecoptions."}";
 array_push($nodes,$tmp);
 for($i = 1; $i < sizeof($allids); $i++){
-	$tmp = "{id: ".$allids[$i].", label: '".$allnames[$i]."', level: ".$alllevels[$i]."".$nodeoptions."}";
+	$tmp = "{id: ".$allids[$i].", label: '<b>".$allnames[$i]."</b>', level: ".$alllevels[$i]."".$nodeoptions."}";
 	array_push($nodes,$tmp);
 }
 $allowners = array();
 $alltags = array();
+//$tagids = array();   //tag id as in the database
 for($i = 0; $i < sizeof($allids); $i++){
 	//owner
 	$srownerX = sqlsrv_query( $conn, $osql, array(&$allids[$i]));
 	$ownerX = sqlsrv_fetch_array($srownerX);
-	$tmp = "{id: 'O".$ownerX["ID"]."', label: '".$ownerX["Name"]."', level: ".$alllevels[$i]."".$nodeuseroptions."}";
+	$tmp = "{id: 'O".$ownerX["ID"]."', label: '<b>".$ownerX["Name"]."</b>', level: ".$alllevels[$i]."".$nodeuseroptions."}";
 	if(!in_array($ownerX["ID"],$allowners)){
 		array_push($nodes,$tmp);
 	}
@@ -189,13 +249,35 @@ for($i = 0; $i < sizeof($allids); $i++){
 	//tags
 	$srtagsX = sqlsrv_query( $conn, $tsql, array(&$allids[$i]));
 	while($tagX = sqlsrv_fetch_array($srtagsX)) {
-		if(!in_array($tagX["Name"].$tagX["Value"],$alltags)){
-			$tmp = "{id: 'T".$tagX["Name"]."&Value=".$tagX["Value"]."', label: '".$tagX["Name"].": ".$tagX["Value"]."', level: ".$alllevels[$i]."".$nodetagoptions."}";
-			array_push($nodes,$tmp);
-			array_push($alltags,$tagX["Name"].$tagX["Value"]);
+		$tagdescriptor = gettagdescriptor($tagX);
+		if($tagX["LinkedParameterID"] == 0){
+			//this is a leave
+			if(!in_array($tagdescriptor,$alltags)){
+				$tmp = "{id: '".$tagdescriptor."',";
+				$tmp = $tmp." label: '".$tagX["Name"].": <b>".$tagX["Value"]."</b>', level: ".$alllevels[$i]."";
+				$tmp = $tmp.$nodetagoptions."}";
+				array_push($alltags,$tagdescriptor);
+				array_push($nodes,$tmp);
+			}
+		}else{
+			//this is a branch
+			if(!in_array($tagdescriptor,$alltags)){
+				$tmp = "{id: '".$tagdescriptor."',";
+				$tmp = $tmp." label: '".$tagX["Name"].": <b>".$tagX["Value"]."</b>', level: ".$alllevels[$i]."";
+				$tmp = $tmp.$nodetaggoptions."}";
+				array_push($alltags,$tagdescriptor);
+				array_push($nodes,$tmp);
+			}
 		}
-		$tmp = "{from: 'T".$tagX["Name"]."&Value=".$tagX["Value"]."', to: ".$allids[$i].", title: '".$tagX["Name"]."'".$edgeoptions."}";
-		array_push($edges,$tmp);
+		if($tagX["ParentParameterID"] == null){
+			//no parent
+			$tmp = "{from: '".$tagtypes[$tagX["ID"]]."', to: ".$allids[$i].", title: '".$tagX["Name"]."'".$edgeoptions."}";
+		}else{
+			$tmp = "{from: '".$tagtypes[$tagX["ID"]]."', to: '".$tagtypes[$tagX["ParentParameterID"]]."', title: '".$tagX["Name"]."'".$edgeoptions."}";
+		}
+		if(!in_array($tmp,$edges)){
+			array_push($edges,$tmp);
+		}
 	}
 }
 for($i = 0; $i < sizeof($edgesT); $i++){
@@ -224,6 +306,19 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				shape:'icon',
 				size: 50,
 				mass: 6,
+				fixed:{
+					x:false,
+					y:true
+				},
+				font: {
+					multi: 'html',
+					strokeWidth: 2,
+					background: '#ffffff'
+				},
+				widthConstraint: {
+					minimum: 5,
+					maximum: 10
+				},
 				icon: {
 					face: 'FontAwesome',
 					code: '\uf187',
@@ -235,6 +330,14 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				shape:'icon',
 				size: 50,
 				mass: 8,
+				fixed:{
+					x:false,
+					y:false
+				},
+				font: {
+					multi: 'html',
+					strokeWidth: 2
+				},
 				icon: {
 					face: 'FontAwesome',
 					code: '\uf0f0',
@@ -242,10 +345,43 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 					color: '#323d43'
 				}
 			},
+			grouptags: {
+				shape:'icon',
+				size: 50,
+				mass: 3,
+				fixed:{
+					x:false,
+					y:false
+				},
+				font: {
+					multi: 'html',
+					strokeWidth: 2
+				},
+				widthConstraint: {
+					maximum: 10
+				},
+				icon: {
+					face: 'FontAwesome',
+					code: '\uf02c',
+					size: 50,
+					color: '#323d43'
+				}
+			},
 			tags: {
 				shape:'icon',
 				size: 50,
-				mass: 4,
+				mass: 3,
+				fixed:{
+					x:false,
+					y:false
+				},
+				font: {
+					multi: 'html',
+					strokeWidth: 2
+				},
+				widthConstraint: {
+					maximum: 10
+				},
 				icon: {
 					face: 'FontAwesome',
 					code: '\uf02b',
@@ -259,17 +395,18 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 		},
 		physics: {
 			repulsion: {
-				nodeDistance: 500
+				nodeDistance: 50
 			},
 			hierarchicalRepulsion: {
-				nodeDistance: 10
+				nodeDistance: 50
 			}
-		}/*,
+		},
 		layout: {
 			hierarchical: {
+				enabled: true,
 				direction: 'UD'
 			}
-		}*/
+		}
 	};
 
     // create an array with nodes
@@ -299,13 +436,24 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 		params.event = "[original event]";
 		if(params.nodes != []){
 			if(typeof params.nodes[0] != "string"){
-				//user clicked on dataset
-				window.location.href = "../view.php?imgID=" + params.nodes[0];
+				if(typeof params.nodes[0] == "number"){
+					//user clicked on dataset
+					window.location.href = "../view.php?imgID=" + params.nodes[0];
+				}
 			}else if(params.nodes[0].charAt(0) === "T"){
 				//user clicked on tag
-				window.location.href = "../viewtag.php?Name=" + params.nodes[0].substring(1);
+				$temp = params.nodes[0].split(";");
+				window.location.href = "../viewtag.php?Name=" + $temp[1] + "&Value=" + $temp[2];
 			}
 		}
+	});
+	
+	network.once("stabilized", function(params) {
+		var optionsX = options;
+		//alert(optionsX['layout']['hierarchical']['enabled']);
+		optionsX['layout']['hierarchical']['enabled'] = false;
+		//alert(optionsX['layout']['hierarchical']['enabled']);
+		network.setOptions(optionsX);
 	});
 	
 </script>

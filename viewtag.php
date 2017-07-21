@@ -29,7 +29,7 @@ if (isset($_GET['order'])){
 include "_SecurityCheck.php";
 /* Query SQL Server for the data */
   
-$tsql = "SELECT TOP 20 [MEDDATADB].[dbo].[Experiments].[ID]
+$tsql = "SELECT DISTINCT TOP 20 [MEDDATADB].[dbo].[Experiments].[ID]
       ,[MEDDATADB].[dbo].[Experiments].[Name]
 	  ,[MEDDATADB].[dbo].[Experiments].[Date]
       ,[MEDDATADB].[dbo].[Experiments].[Description]

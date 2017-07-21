@@ -74,13 +74,16 @@ sign in to your account (remember to switch the domain by adding "THEMEDDATA\" i
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><?php echo $_SERVER["SERVER_SOFTWARE"]; ?></li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft SQL Server</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>MCTV</li>
-			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.viewstl.com">viewstl</a></li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.viewstl.com">viewstl</a> (STL viewer)</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>PHP <?php echo phpversion(); ?></li><!-- phpinfo(); -->
 			<li class="tree"><i class="fa fa-fw fa-html5"></i>HTML 5</li>
 			<li class="tree"><i class="fa fa-fw fa-css3"></i>CSS 3</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Javascript</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="https://jquery.com/">jQuery</a></li>
-			<li class="tree"><i class="fa fa-fw fa-fa"></i><a href="http://fontawesome.io">Font Awesome</a></li>
+			<li class="tree"><i class="fa fa-fw fa-fa"></i><a href="http://fontawesome.io">Font Awesome</a> (Icons)</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://visjs.org">vis.js</a> (Network Graph)</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.jstree.com">jsTree</a> (Tree View)</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="https://github.com/ilikenwf/nestedSortable">nestedSortable</a> (nested list with custom order through drag and drop)</li>
 		</ul>
 	</li>
 	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the tiler
