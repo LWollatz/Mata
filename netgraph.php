@@ -77,7 +77,7 @@ function gettagdescriptor($tagX){
   FULL JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS [LinkP]
   ON [LinkP].[LinkedParameterID] = [ExperimentParameters].[ID]
   WHERE [LinkP].[ParentParameterID] = ?
-  ORDER BY [ExperimentParameters].[Position]";
+  ORDER BY [ExperimentParameters].[Name], [ExperimentParameters].[Value]";
 	if(array_key_exists($tagX['ID'],$GLOBALS["tagtypes"])){
 		//saved already -> just copy
 		return $GLOBALS["tagtypes"][$tagX['ID']];
