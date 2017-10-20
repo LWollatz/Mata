@@ -2,6 +2,7 @@
 <html style="height: 100%;">
 <?php
 /*<!--php-->*/
+ini_set("display_errors", "on");
 include "_LayoutDatabase.php";
 
 /* get variables */

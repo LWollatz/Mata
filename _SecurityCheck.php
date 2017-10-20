@@ -1,7 +1,7 @@
 <?php
 $authstage = "None";
 if($_SERVER["AUTH_USER"] != ""){
-	$securitycheckUSER = str_replace("THEMEDDATA\\","",$_SERVER["AUTH_USER"]);
+	$securitycheckUSER = str_replace("MEDDATA\\","",$_SERVER["AUTH_USER"]);
 	$securitycheckSQLUSER = "SELECT TOP 1 *
 	  FROM [MEDDATADB].[dbo].[Users] 
 	  WHERE [UserName] = ?";

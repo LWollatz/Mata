@@ -135,7 +135,7 @@ $owner = sqlsrv_fetch_array($srowner);
 /*Check if normal Experiment (not config data)*/
 if($row["ExperimentTypeID"] != 0){
 	$errmsg = $errmsg."Invalid ID ";
-	header('Location: http://meddata.clients.soton.ac.uk/error.php?msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/error.php?msg='.$infomsg.'&err='.$errmsg);
 }
 
 ?>
@@ -174,7 +174,7 @@ $newids = array(array(('id') => $imageID, ('level') => 2 ));
 $edges = array();
 $edgesT = array();
 $edgeoptions = ", color:'#d4d4d4', chosen:{edge:function(values,id,selected,hovering){values.color = '#323d43';values.width = 3;}}";
-$edgeoptions = ", color:{color:'#d4d4d4', highlight:'#323d43', hover:'#323d43'}";
+$edgeoptions = ", color:{color:'#9999A6', highlight:'#323d43', hover:'#323d43'}";
 $edgeDSoptions = ", width:3, color:'#369aca', smooth:{enabled:'false'}";
 $nodeoptions = ", group: 'datasets'"; //, color:'#266c8e', font:{color:'#ffffff'}";
 $nodeuseroptions = ", group: 'users'";

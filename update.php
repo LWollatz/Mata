@@ -1,4 +1,5 @@
 <?php
+	ini_set("display_errors", "on");
 	include "_LayoutDatabase.php"; 
 	$errmsg = "";
     $infomsg = "";
@@ -8,11 +9,14 @@
     }
 	$imageID = (int)$_POST["ID"];
 	include "_SecurityCheck.php";
+	$thisurl = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]";
+	$thisurl = "http://10.15.41.48";
 	if($authstage != "Owner" && $authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
+	
 
 function updateParentTag($conn,$ChildID,$ParentID){
 	$querytln="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameterLinks]
@@ -43,7 +47,7 @@ function updateParentTag($conn,$ChildID,$ParentID){
 		{
 			echo "Error in executing statement.\n";
 			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (add parent tag"." C>".$ChildID." P>".$ParentID.")<br/>";
-			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+			header('Location: '.$thisurl.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
 			die( print_r( sqlsrv_errors(), true));
 		}
 	}
@@ -83,7 +87,7 @@ function deleteTag($imageID,$conn,$tagID){
 	{
 		echo "Error in executing statement (Delete Tag ".$tagID.").\n";
 		$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (Delete Tag ".$tagID.")<br/>";
-		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+		header('Location: '.$thisurl.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
 		die( print_r( sqlsrv_errors(), true));
 	}
 }
@@ -160,7 +164,7 @@ if($_POST['Save']){
     {
         echo "Error in executing statement.\n";
 	    $errmsg = $errmsg."error in executing statement<br/>";
-        header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+        header('Location: '.$thisurl.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
         die( print_r( sqlsrv_errors(), true));
     }
 
@@ -245,7 +249,7 @@ if($_POST['Save']){
 				{
 					echo "Error in executing statement (Update Tag Header).\n";
 					$errmsg = $errmsg."error in executing statement (Update Tag Header)<br/>";
-					header('Location: https://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+					header('Location: '.$thisurl.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 					die( print_r( sqlsrv_errors(), true));
 				}
 		}else{
@@ -274,7 +278,7 @@ if($_POST['Save']){
 	}
 
 
-    header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+    header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 }else if($_POST['Link']){
 	$imageID = (int)$_POST["ID"];
 	$parentID = (int)$_POST["OriID"];
@@ -307,13 +311,13 @@ if($_POST['Save']){
 		{
 			echo "Error in executing statement.\n";
 		    $errmsg = $errmsg."error in executing linking statement<br/>";
-			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
     }
 	
 	
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['Un-Link']){
@@ -346,11 +350,11 @@ if($_POST['Save']){
 	{
 		echo "Error in executing statement.\n";
 		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 		die( print_r( sqlsrv_errors(), true));
 	}
 	
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['Import']){
@@ -398,19 +402,19 @@ if($_POST['Save']){
 		{
 			echo "Error in executing statement.\n";
 			$errmsg = $errmsg."error in executing tag importing statement<br/>";
-			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
 	}
 	
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['UsrAdd']){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST["NewUSRID"];
@@ -448,20 +452,20 @@ if($_POST['Save']){
 		{
 			echo "Error in executing statement.\n";
 		    $errmsg = $errmsg."error in adding user statement<br/>";
-			header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
     }
 	
 	
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if(isset($_POST['UsrDel']) && $_POST['UsrDel'] !== ""){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: https://meddata.clients.soton.ac.uk/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST['UsrDel'];
@@ -492,15 +496,15 @@ if($_POST['Save']){
 	{
 		echo "Error in executing statement.\n";
 		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 		die( print_r( sqlsrv_errors(), true));
 	}
 	
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else{
 	$errmsg = "something went wrong";
-	header('Location: https://meddata.clients.soton.ac.uk/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);
 }
 ?>
