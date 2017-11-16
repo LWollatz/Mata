@@ -12,7 +12,7 @@
 			<?php }else{ ?>
 				<a href="clean.php"><i class="fa fa-recycle"></i></a>
 			<?php } ?>-->
-			<?php if($_SERVER["AUTH_USER"] != ""){?> <a><i class="fa fa-user-md"></i> <?php echo str_replace("THEMEDDATA\\","",$_SERVER["AUTH_USER"]); ?></a><?php } ?>
+			<?php if($_SERVER["AUTH_USER"] != ""){?> <a><i class="fa fa-user-md"></i> <?php echo str_replace($FSdomain."\\","",$_SERVER["AUTH_USER"]); ?></a><?php } ?>
 			<input name="utf8" type="hidden" value="&#x2713;" />
 			<button type="submit" class="btn btn-search search">
 				<i class="fa fa-search"></i>

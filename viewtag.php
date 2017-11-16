@@ -67,7 +67,7 @@ $tagvalue = htmlspecialchars($tagvalue,ENT_QUOTES);
 
 <div id="content">
 <div>
-First 20 datasets where '<i><?php echo $tagname; ?></i>' is '<i><?php echo $tagvalue; ?></i>'<br/>
+First 20 datasets where '<i><a href="tags.php?Name=<?php echo $tagname; ?>"><?php echo $tagname; ?></a></i>' is '<i><?php echo $tagvalue; ?></i>'<br/>
 <?php 
 	$experiments = $stmt;
 	include "App_Data/ListExperiments.php";

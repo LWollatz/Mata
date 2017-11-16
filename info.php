@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php 
+include "config.php"; 
+$thisRoot = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]";
+?> 
 <head>
 	<!--metadata-->
 	<?php $PageTitle = "Info | MEDDATA"; ?>
@@ -35,17 +39,17 @@ include "_LayoutHeader.php";
 <h2>How to connect:</h2>
 requires VPN to soton.ac.uk
 <h3>Connect to website</h3>
-open https://meddata.clients.soton.ac.uk in a browser<br/>
-sign in to your account (remember to switch the domain by adding "THEMEDDATA\" in front of your username!)
+open <?php echo $thisRoot;?> in a browser<br/>
+sign in to your account (remember to switch the domain by adding "<?php echo $FSdomain;?>\" in front of your username!)
 <h3>Connect to filestore</h3>
 <ol>
-	<li>If not on university network, connect via VPN</li>
+	<li>If not on the network, connect via VPN</li>
 	<li>In Windows Explorer go to Computer</li>
 	<li>Click on "Map Network Drive"</li>
 	<li>On the new window that appears
 		<ol>
 			<li>Choose a drive letter (e.g. M:)</li>
-			<li>And set the folder: \\meddata.clients.soton.ac.uk\data</li>
+			<li>And set the folder: \\<?php echo $FSpath;?></li>
 			<li>Check "Reconnect at logon" if desired</li>
 			<li>Check "Connect using different credentials" (necessary!)</li>
 			<li>Click "Finish"</li>
@@ -54,8 +58,8 @@ sign in to your account (remember to switch the domain by adding "THEMEDDATA\" i
 	<li>On the security window:
 		<ol>
 			<li>Choose "Use another Account"</li>
-			<li>Username: meddata&lt;\username&gt;</li>
-			<li>Password: Password for meddata</li>
+			<li>Username: <?php echo $FSdomain;?>\&lt;username&gt;</li>
+			<li>Password: Password for <?php echo $FSdomain;?></li>
 			<li>Check "Remember my credentials" (if desired)</li>
 			<li>Click "OK" and you are set up</li>
 		</ol>
@@ -67,13 +71,13 @@ sign in to your account (remember to switch the domain by adding "THEMEDDATA\" i
 
 <h2>Software used</h2>
 <ul class="tree fa-ul">
-	<li class="tree"><i class="fa fa-fw fa-windows"></i>Windows Server 2012 R2 Standard Evaluation</li>
-	<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://fontawesome.io/examples/">Heterogeneous Data Center</a> filewatcher</li>
+	<li class="tree"><i class="fa fa-fw fa-windows"></i>Windows Server 2012 R2 Standard</li>
+	<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://hdc.codeplex.com">Heterogeneous Data Center</a> filewatcher</li>
 	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the website
 		<ul class="tree fa-ul">
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><?php echo $_SERVER["SERVER_SOFTWARE"]; ?></li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Microsoft SQL Server</li>
-			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>MCTV</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://dx.doi.org/10.5258/SOTON/400332">MCTV</a> (Image stack viewer)</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.viewstl.com">viewstl</a> (STL viewer)</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>PHP <?php echo phpversion(); ?></li><!-- phpinfo(); -->
 			<li class="tree"><i class="fa fa-fw fa-html5"></i>HTML 5</li>
@@ -89,8 +93,8 @@ sign in to your account (remember to switch the domain by adding "THEMEDDATA\" i
 	<li class="tree"><i class="fa fa-fw fa-circle-o"></i>For the tiler
 		<ul class="tree fa-ul">
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Erlang OTP 19.3</li>
-			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Rabbit MQ 3.6.9</li>
-			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.celeryproject.org/">Celery</a> 3.1.25</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Rabbit MQ 3.6.9 (Queue host)</li>
+			<li class="tree"><i class="fa fa-fw fa-circle-o"></i><a href="http://www.celeryproject.org/">Celery</a> 3.1.25 (Queue)</li>
 			<li class="tree"><i class="fa fa-fw fa-circle-o"></i>Python 2.7 with PILlow</li>
 		</ul>
 	</li>

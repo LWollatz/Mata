@@ -11,11 +11,13 @@ include "_SecurityCheck.php";
 //2) display all tag values under a tag key and link to list of experiments
 //3) display all tag children under of a tag and link to a list of their children or if no children exist a list of experiments
 
-$tsql = "SELECT [Name], [Value], COUNT(*) AS Count
-  FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] > 2
-  GROUP BY [Name], [Value]
-  ORDER BY [Value] ASC";
+$tsql = "SELECT [Par].[Name], [Par].[Value], COUNT(*) AS Count
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS [Par]
+  INNER JOIN [MEDDATADB].[dbo].[Experiments] AS [Exp]
+  ON [Exp].[ID] = [Par].[ExperimentID]
+  WHERE [Exp].[ExperimentTypeID] >= 0
+  GROUP BY [Par].[Name], [Par].[Value]
+  ORDER BY [Par].[Value] ASC";
 $case = 1;
 if (isset($_GET['Name'])){
 	//CASE 2
@@ -47,11 +49,13 @@ if (isset($_GET['Name'])){
 }else{
 	//CASE 1
 	$case = 1;
-	$tsql = "SELECT [Name] AS 'Text', COUNT(*) AS Count
-  FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] > 2
-  GROUP BY [Name]
-  ORDER BY [Name] ASC";
+	$tsql = "SELECT [Par].[Name] AS 'Text', COUNT(*) AS Count
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS [Par]
+  FULL JOIN [MEDDATADB].[dbo].[Experiments] AS [Exp]
+  ON [Exp].[ID] = [Par].[ExperimentID]
+  WHERE [Exp].[ExperimentTypeID] >= 0
+  GROUP BY [Par].[Name]
+  ORDER BY [Par].[Name] ASC";
     $arguments = array();
 }
    
@@ -117,6 +121,10 @@ include "_LayoutHeader.php";
 while($row = sqlsrv_fetch_array($stmt)) {
 	//echo "<text style=\"font-size:".(60+80*($row['Count']-$min)/($max-$min))."%\"><a href=\"viewtag.php?Name=".$row['Name']."&Value=".$row['Value']."\" >".$row['Value']."</a></text>, ";
 	$fontsize = 140-80*(($max/$row['Count'])-1)/($total-1);
+	$fontsizeMin = 50;
+	if($fontsize < $fontsizeMin){
+		$fontsize = $fontsizeMin;
+	}
 	if($fontsize > 0){
 		echo "<text style=\"font-size:".$fontsize."%\">";
 		if($case == 1){

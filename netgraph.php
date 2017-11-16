@@ -83,7 +83,7 @@ function gettagdescriptor($tagX){
 		return $GLOBALS["tagtypes"][$tagX['ID']];
 	}else{
 		//not saved -> need to create
-		$tagtype = "T;".$tagX["Name"].";".$tagX["Value"].";[";
+		$tagtype = "T;".htmlspecialchars($tagX["Name"]).";".htmlspecialchars($tagX["Value"]).";[";
 		$ctags = sqlsrv_query( $GLOBALS["conn"], $tcsql, array(&$tagX["ID"]));
 		while($childX = sqlsrv_fetch_array($ctags)) {
 			$temp = "{";
@@ -158,6 +158,7 @@ if($row["ExperimentTypeID"] != 0){
 
 <?php 
 $MenuEntries = '<a href="view.php?imgID='.$imageID.'"><i class="fa fa-cross"></i> Close</a>';
+$MenuEntries = '<a class="btn btn-abort" href="view.php?imgID='.$imageID.'"><i class="fa fa-close"></i> Close</a>';
 include "_LayoutHeader.php"; 
 ?> 
 
@@ -182,6 +183,7 @@ $nodetagoptions = ", group: 'tags'";
 $nodetaggoptions = ", group: 'grouptags'";
 $nodespecoptions = ", group: 'datasets', icon: {color:'#f00f2c'}"; //, color:'#f00f2c', font:{color:'#ffffff'}";
 
+//do until no changes registered (all relatives found)
 while(sizeof($newids) > 0){
 	$curid = $newids[0]['id'];
 	$curlvl = $newids[0]['level'];
@@ -254,7 +256,11 @@ for($i = 0; $i < sizeof($allids); $i++){
 			//this is a leave
 			if(!in_array($tagdescriptor,$alltags)){
 				$tmp = "{id: '".$tagdescriptor."',";
-				$tmp = $tmp." label: '".$tagX["Name"].": <b>".$tagX["Value"]."</b>', level: ".$alllevels[$i]."";
+				$tmpN = $tagX["Name"];
+				$tmpV = $tagX["Value"];
+				//$tmpV = htmlspecialchars_decode(htmlspecialchars($tagX["Value"]),ENT_QUOTES);
+				//we put the leaves one level different from their dataset to avoid the situation of 1 dataset and many tags all on one line
+				$tmp = $tmp." label: '".$tmpN.": <b>".$tmpV."</b>', level: ".($alllevels[$i]+1)."";
 				$tmp = $tmp.$nodetagoptions."}";
 				array_push($alltags,$tagdescriptor);
 				array_push($nodes,$tmp);

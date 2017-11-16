@@ -2,7 +2,7 @@
 <html style="height: 100%;">
 <?php
 /*<!--php-->*/
-ini_set("display_errors", "on");
+
 include "_LayoutDatabase.php";
 
 /* get variables */
@@ -105,7 +105,7 @@ if($row["IsDeleted"] != 0){
 }
 
 /*get relative path for files*/
-$relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
+$relpath = str_replace("m:\\", "../", $row['DefaultBasePath']);
 $relpath = str_replace("\\", "/", $relpath);
 ?>
 <head>
@@ -531,7 +531,7 @@ while($key = sqlsrv_fetch_array($experiments)) {
     $( "#OriID" ).combobox();
   } );
 </script>
-<?php if($authstage == "Owner" || $authuser['Username'] != "Administrator"){ ?>
+<?php if($authstage == "Owner" || $authuser['Username'] == "Administrator"){ ?>
 <div class="container">
 <?php
 

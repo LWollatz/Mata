@@ -11,7 +11,7 @@ while($file = sqlsrv_fetch_array($srfiles)) {
 	$fileparts = explode('.',$file['Filename']);
 	$fileending = end($fileparts);
 	if (strpos(".exe.msi.", $fileending) === FALSE){
-		$filepath = str_replace("c:\\", "//meddata.clients.soton.ac.uk/", $file['BasePath']);
+		$filepath = str_replace("M:", "//meddataserver.clients.soton.ac.uk", $file['BasePath']); //change this to the drive used in your installation
 		$filepath = str_replace("\\", "/", $filepath);
 		$fileendpath = str_replace("\\", "/", $file['Filename']);
 		//echo $fileendpath;

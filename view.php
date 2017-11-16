@@ -117,15 +117,16 @@ if($row["IsDeleted"] != 0){
 
 
 /*get relative path for files*/
-$relpath = str_replace("c:\\", "../", $row['DefaultBasePath']);
+$filpath = str_replace("\\", "/", $row['DefaultBasePath']);
+$relpath = str_replace($FSroot, "../", $row['DefaultBasePath']);
 $relpath = str_replace("\\", "/", $relpath);
 
 $hasPreview = false;
 $hasSTL = false;
-if(file_exists($relpath."/.previews/infoJSON.txt")){
+if(file_exists($filpath."/.previews/infoJSON.txt")){
 	$hasPreview = true;
 }
-if(file_exists($relpath."/.previews/infoSTL.txt")){
+if(file_exists($filpath."/.previews/infoSTL.txt")){
 	$hasSTL = true;
 }
 
@@ -161,6 +162,12 @@ include "_LayoutHeader.php";
 	<div id="basicinfo" style="margin-left:25px;">
 		<b>Name:</b> <?php echo $row['Name'];?><br/>
 		<b>Date:</b> <?php echo $row['Date']->format("d/m/Y H:i:s");?><br/>
+		<b>Your Access:</b> <?php echo $authstage;?><br/>
+		<!--
+		<b>Path:</b> <?php echo $relpath;?><br/>
+		<b>Contains 3D Stack?:</b> <a href="<?php echo $relpath.'/.previews/infoJSON.txt';?>">boolean <?php if($hasPreview){echo "true";}else{echo "false";}?></a><br/>
+		<b>Contains STL?:</b> <a href="<?php echo $relpath.'/.previews/infoSTL.txt';?>">boolean <?php if($hasSTL){echo "true";}else{echo "false";}?></a><br/>
+		-->
 		<b>Description:</b> <i><?php echo $row['Description'];?></i><br/>
 		<b><i class="fa fa-user-md"></i>   Owner:</b> <?php echo $owner['Name']; ?><br/>
 		<?php //echo " - you are ".$authstage."<br/>"; ?>
@@ -334,14 +341,14 @@ if( !$hasPreview && !$hasSTL || $authstage == "Basic" || $datasetDeleted){
 
 <?php 
 	if($hasSTL && $authstage != "Basic" && !$datasetDeleted){ 
-		$abspath = str_replace("../", "https://meddata.clients.soton.ac.uk/", $relpath);
-		$string = file_get_contents($relpath."/.previews/infoSTL.txt");
+		$abspath = str_replace("../", "https://meddataserver.clients.soton.ac.uk/", $relpath); //edit this line to match your installation
+		$string = file_get_contents($filpath."/.previews/infoSTL.txt");
 		$stlfiles = explode("\n",$string);
 ?>
 		<div class="datacontent" style="color:#ffffff;">
 			<!--<iframe id="vs_iframe" src="http://www.viewstl.com/?embedded&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>">
 			</iframe>-->
-			<iframe id="vs_iframe" src="viewstl/viewstl.php?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&local&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
+			<iframe id="vs_iframe" src="viewstl/viewstl.php?embedded&url=<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>&color=white&bgcolor=black&shading=flat&rotation=no&orientation=bottom&noborder=yes">
 			</iframe>
 			<?php echo $abspath; ?>/<?php echo $stlfiles[0]; ?>
 		</div>

@@ -9,12 +9,12 @@
     }
 	$imageID = (int)$_POST["ID"];
 	include "_SecurityCheck.php";
-	$thisurl = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]";
-	$thisurl = "http://10.15.41.48";
+	$thisRoot = (isset($_SERVER['HTTPS']) ? "https" : "http")."://$_SERVER[HTTP_HOST]";
+	//$thisRoot = "http://10.15.41.48";
 	if($authstage != "Owner" && $authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisRoot.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
 	
 
@@ -26,7 +26,7 @@ function updateParentTag($conn,$ChildID,$ParentID){
       WHERE [LinkedParameterID] = ?";
 	$removeold = sqlsrv_prepare( $conn, $querytld, array( &$ChildID));
 	if( sqlsrv_execute( $removeold)){
-		$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any old link";
+		//$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any old link";
 	}
 	if($ParentID != -1){
 		$addnew = sqlsrv_prepare( $conn, $querytln, array( &$ParentID, &$ChildID));	
@@ -34,20 +34,20 @@ function updateParentTag($conn,$ChildID,$ParentID){
 		{
 			if( sqlsrv_rows_affected( $addnew) > 0)
 			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $addnew);
+				//echo "Link updated. (rows affected: ".sqlsrv_rows_affected( $addnew).")\n <br />";
 				$GLOBALS["infomsg"] = $GLOBALS["infomsg"].'Link updated. (rows affected: '.sqlsrv_rows_affected( $addnew).')<br/>';
 			}
 			else
 			{
-				echo "Statement executed but no rows changed.\n <br />";
-				$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
+				//echo "Link updated. (Statement executed but no rows changed)\n <br />";
+				//$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made to link<br/>";
 			}
 		}
 		else
 		{
-			echo "Error in executing statement.\n";
+			//echo "Error in executing statement.\n";
 			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (add parent tag"." C>".$ChildID." P>".$ParentID.")<br/>";
-			header('Location: '.$thisurl.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+			header('Location: '.$thisRoot.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
 			die( print_r( sqlsrv_errors(), true));
 		}
 	}
@@ -73,21 +73,21 @@ function deleteTag($imageID,$conn,$tagID){
 	{
 		if( sqlsrv_rows_affected( $QdeleteTag ) > 0)
 		{
-			echo "Tag ".$tagID." removed.\n <br />".sqlsrv_rows_affected( $QdeleteTag );
+			//echo "Tag ".$tagID." removed. (rows changed: ".sqlsrv_rows_affected( $QdeleteTag )."\n <br />";
 			$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."Tag ".$tagID." removed. (rows affected: ".sqlsrv_rows_affected( $QdeleteTag ).")<br/>";
 		}
 		else
 		{
-			echo "Statement executed but no rows changed.\n <br />";
-			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
+			//echo "Statement executed but no rows changed.\n <br />";
+			//$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
 		}
 		updateParentTag($conn,$tagID,-1);
 	}
 	else
 	{
-		echo "Error in executing statement (Delete Tag ".$tagID.").\n";
+		//echo "Error in executing statement (Delete Tag ".$tagID.").\n";
 		$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (Delete Tag ".$tagID.")<br/>";
-		header('Location: '.$thisurl.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+		header('Location: '.$thisRoot.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
 		die( print_r( sqlsrv_errors(), true));
 	}
 }
@@ -145,31 +145,33 @@ if($_POST['Save']){
     
 
     /*** UPDATE DESCRIPTION ***/
+	//echo "***UPDATE DESCRIPTION***\n<br/>";
     $visitClose = sqlsrv_prepare( $conn, $query, array( &$ud_description, &$imageID));
     
     if( sqlsrv_execute( $visitClose))
     {
         if( sqlsrv_rows_affected( $visitClose) > 0)
         {
-            echo "Statement executed.\n <br />".sqlsrv_rows_affected( $visitClose);
+            //echo "Description updated. (rows affected:".sqlsrv_rows_affected( $visitClose).")\n <br />";
             $infomsg = $infomsg.'Description updated. (rows affected: '.sqlsrv_rows_affected( $visitClose).')<br/>';
         }
         else
         {
-            echo "Statement executed but no rows changed.\n <br />";
-            $errmsg = $errmsg."No changes made<br/>";
+            //echo "Statement executed but no rows changed.\n <br />";
+            //$errmsg = $errmsg."No changes made<br/>";
         }
     }
     else
     {
-        echo "Error in executing statement.\n";
-	    $errmsg = $errmsg."error in executing statement<br/>";
-        header('Location: '.$thisurl.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+        //echo "Error in executing statement.\n";
+	    $errmsg = $errmsg."error in executing statement to change description<br/>";
+        header('Location: '.$thisRoot.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
         die( print_r( sqlsrv_errors(), true));
     }
 
     
     /***UPDATE TAGS***/
+	//echo "***UPDATE TAGS***\n<br/>";
 	/*get new tags and bring them into shape*/
 	$ud_orderstr = $_POST["ud_order"];
 	$ud_orderp = explode("&",$ud_orderstr);
@@ -186,8 +188,8 @@ if($_POST['Save']){
 		$temp = substr($temp, 3);
 		$temp = substr($temp, 0, -1);
 		$tag["ID"] = $temp;
-		$tag["name"] = $_POST["ud_name".$temp];
-		$tag["value"] = $_POST["ud_value".$temp];
+		$tag["name"] = htmlspecialchars($_POST["ud_name".$temp],ENT_QUOTES);
+		$tag["value"] = htmlspecialchars($_POST["ud_value".$temp],ENT_QUOTES);
 		$tag["position"] = $cntr;
 		$ud_order[$tag["ID"]] = $tag;
 		$cntr = $cntr + 1;
@@ -202,6 +204,7 @@ if($_POST['Save']){
     $srtags = sqlsrv_query( $conn, $tsql, array(&$imageID) );
 	
 	/* INSERT NEW */
+	//echo "***INSERT NEW TAG***\n<br/>";
 	$tag = $ud_order["new"];
 	$newID = $tag["parentID"];
 	if($tag["name"] != ""){
@@ -210,7 +213,7 @@ if($_POST['Save']){
 		sqlsrv_next_result($queryout);
 		$temp = sqlsrv_fetch_array($queryout);
 		$newID = $temp['ID'];
-		$errmsg = $errmsg." ADD ".$newID."<br/>";
+		//$errmsg = $errmsg." ADD ".$newID."<br/>";
 		updateParentTag($conn,$newID,$tag["parentID"]);
 	}
 	
@@ -219,7 +222,7 @@ if($_POST['Save']){
 	while($tag = sqlsrv_fetch_array($srtags)) {
 		if(array_key_exists($tag['ID'],$ud_order)){
 			//TAG STILL THERE => ONLY UPDATE
-			$errmsg = $errmsg."UPDATE ".$tag['ID']."<br/>";
+			//$errmsg = $errmsg."UPDATE ".$tag['ID']."<br/>";
 			$tagnew = $ud_order[$tag['ID']];
 			if(!$tagnew['value']){
 				$tagnew['value'] = $tag['Value'];
@@ -236,30 +239,33 @@ if($_POST['Save']){
 				{
 					if( sqlsrv_rows_affected( $updateTag ) > 0)
 					{
-						echo "Statement executed.\n <br />".sqlsrv_rows_affected( $updateTag );
-						$infomsg = $infomsg."Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")<br/>";
+						//echo "Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")\n <br />";
+						//$infomsg = $infomsg."Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")<br/>";
 					}
 					else
 					{
-						echo "Statement executed but no rows changed.\n <br />";
-						$errmsg = $errmsg."No changes made<br/>";
+						//echo "Statement executed but no rows changed.\n <br />";
+						//$errmsg = $errmsg."No changes made<br/>";
 					}
 				}
 				else
 				{
-					echo "Error in executing statement (Update Tag Header).\n";
+					//echo "Error in executing statement (Update Tag Header).\n";
 					$errmsg = $errmsg."error in executing statement (Update Tag Header)<br/>";
-					header('Location: '.$thisurl.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+					header('Location: '.$thisRoot.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 					die( print_r( sqlsrv_errors(), true));
 				}
 		}else{
 			//TAG NOT THERE => DELETE
-			$errmsg = $errmsg."DELETE ".$tag['ID']."<br/>";
+			//$errmsg = $errmsg."DELETE ".$tag['ID']."<br/>";
 			deleteTag($imageID,$conn,$tag['ID']);
 		}
 	}
 	
+	
+	
 	/***UPDATE PREVIEWER***/
+	//echo "***UPDATE PREVIEWER***\n<br/>";
 	if (file_exists($relpath)){
 		$string = file_get_contents($relpath);
 		$json_obj = json_decode($string, true);
@@ -277,8 +283,10 @@ if($_POST['Save']){
 		file_put_contents($relpath, json_encode($json_obj));
 	}
 
-
-    header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+    //echo "***COMPLETED SAVE***\n<br/>";
+    header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	
+	
 }else if($_POST['Link']){
 	$imageID = (int)$_POST["ID"];
 	$parentID = (int)$_POST["OriID"];
@@ -298,26 +306,26 @@ if($_POST['Save']){
 		{
 			if( sqlsrv_rows_affected( $insertLink ) > 0)
 			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertLink );
+				//echo "New Tag inserted. (rows affected: ".sqlsrv_rows_affected( $insertLink ).")\n <br />";
 				$infomsg = $infomsg."Link added. (rows affected: ".sqlsrv_rows_affected( $insertLink ).")<br/>";
 			}
 			else
 			{
-				echo "Statement executed but no rows changed.\n <br />";
+				//echo "Statement executed but no rows changed.\n <br />";
 				$errmsg = $errmsg."No changes made<br/>";
 			}
 		}
 		else
 		{
-			echo "Error in executing statement.\n";
+			//echo "Error in executing statement.\n";
 		    $errmsg = $errmsg."error in executing linking statement<br/>";
-			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
     }
 	
 	
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['Un-Link']){
@@ -337,24 +345,24 @@ if($_POST['Save']){
 	{
 		if( sqlsrv_rows_affected( $deleteLink ) > 0)
 		{
-			echo "Link to ".$parentID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
+			//echo "Link to ".$parentID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink )."\n <br />";
 			$infomsg = $infomsg."Link to ".$parentID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
 		}
 		else
 		{
-			echo "Statement executed but no rows changed.\n <br />";
+			//echo "Statement executed but no rows changed.\n <br />";
 			$errmsg = $errmsg."No changes made to link<br/>";
 		}
 	}
 	else
 	{
-		echo "Error in executing statement.\n";
+		//echo "Error in executing statement.\n";
 		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 		die( print_r( sqlsrv_errors(), true));
 	}
 	
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['Import']){
@@ -379,9 +387,7 @@ if($_POST['Save']){
     $errmsg = "";
     $infomsg = "";
 	
-	//echo $queryli;
 	$newtags = sqlsrv_query( $conn, $queryli, array( &$parentID, &$imageID));
-	//echo "results ".sqlsrv_num_rows($newtags);
 	
 	while($tag = sqlsrv_fetch_array($newtags)) {
 		$addTag = sqlsrv_prepare( $conn, $queryta, array( &$imageID, &$tag['Name'], &$tag['Value'], &$tag['Unit'], &$tag['Type']),$options);
@@ -389,37 +395,36 @@ if($_POST['Save']){
 		{
 			if( sqlsrv_rows_affected( $addTag ) > 0)
 			{
-				echo "Tag from ".$parentID." added.\n <br />".sqlsrv_rows_affected( $addTag );
+				//echo "Tag from ".$parentID." added.\n <br />".sqlsrv_rows_affected( $addTag );
 				$infomsg = $infomsg."Tag from ".$parentID." added. (rows affected: ".sqlsrv_rows_affected( $addTag ).")<br/>";
 			}
 			else
 			{
-				echo "Statement executed but no rows changed.\n <br />";
+				//echo "Statement executed but no rows changed.\n <br />";
 				$errmsg = $errmsg."No changes made to tags<br/>";
 			}
 		}
 		else
 		{
-			echo "Error in executing statement.\n";
+			//echo "Error in executing statement.\n";
 			$errmsg = $errmsg."error in executing tag importing statement<br/>";
-			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
 	}
 	
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if($_POST['UsrAdd']){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisRoot.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST["NewUSRID"];
 	$userPermission = (int)$_POST["NewUSRprm"];
-	echo $userID;
 	if($userPermission !== 1){
 		$userPermission = 0;
 	}
@@ -439,33 +444,33 @@ if($_POST['Save']){
 		{
 			if( sqlsrv_rows_affected( $insertUser ) > 0)
 			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertUser );
+				//echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertUser );
 				$infomsg = $infomsg."User added. (rows affected: ".sqlsrv_rows_affected( $insertUser ).")<br/>";
 			}
 			else
 			{
-				echo "Statement executed but no rows changed.\n <br />";
+				//echo "Statement executed but no rows changed.\n <br />";
 				$errmsg = $errmsg."No changes made<br/>";
 			}
 		}
 		else
 		{
-			echo "Error in executing statement.\n";
+			//echo "Error in executing statement.\n";
 		    $errmsg = $errmsg."error in adding user statement<br/>";
-			header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+			header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 			die( print_r( sqlsrv_errors(), true));
 		}
     }
 	
 	
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else if(isset($_POST['UsrDel']) && $_POST['UsrDel'] !== ""){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
-		header('Location: '.$thisurl.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisRoot.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
 	$imageID = (int)$_POST["ID"];
 	$userID = (int)$_POST['UsrDel'];
@@ -483,28 +488,29 @@ if($_POST['Save']){
 	{
 		if( sqlsrv_rows_affected( $deleteLink ) > 0)
 		{
-			echo "Link to ".$userID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
+			//echo "Link to ".$userID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
 			$infomsg = $infomsg."Link to ".$userID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
 		}
 		else
 		{
-			echo "Statement executed but no rows changed.\n <br />";
+			//echo "Statement executed but no rows changed.\n <br />";
 			$errmsg = $errmsg."No changes made to link<br/>";
 		}
 	}
 	else
 	{
-		echo "Error in executing statement.\n";
+		//echo "Error in executing statement.\n";
 		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+		header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 		die( print_r( sqlsrv_errors(), true));
 	}
 	
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
 	
 }else{
 	$errmsg = "something went wrong";
-	header('Location: '.$thisurl.'/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);
+	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);
+	die( print_r( sqlsrv_errors(), true));
 }
 ?>

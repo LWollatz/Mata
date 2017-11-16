@@ -926,6 +926,7 @@
 		<?php /** from here onwards are options which are originally interpreted with php it seems**/?>
 		<script>
 			switch_view('pbar');
+			url_is_local=<?php if($_GET['local']){echo "true";}else{echo "false";};?>;
 			url_is_local=true;
 			<?php $tempurl = $_GET['url'];?>
 			read_from_url("<?php echo $tempurl; ?>");
