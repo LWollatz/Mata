@@ -40,7 +40,7 @@ if( $stmt === false )
 ?>
 <head>
 	<!--metadata-->
-	<?php $PageTitle = "MEDDATA"; ?>
+	<?php $PageTitle = "MATA"; ?>
 	<?php include "_LayoutMetadata.php"; ?> 
 	<!--style-->
 	<?php include "_LayoutStyles.php"; ?> 

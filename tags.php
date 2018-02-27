@@ -89,7 +89,7 @@ if($total <= 1){ $total = 2;}
 
 <head>
 	<!--metadata-->
-	<?php $PageTitle = "Tags | MEDDATA"; ?>
+	<?php $PageTitle = "Tags | MATA"; ?>
 	<?php include "_LayoutMetadata.php"; ?> 
 	<!--style-->
 	<?php include "_LayoutStyles.php"; ?> 

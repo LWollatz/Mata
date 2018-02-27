@@ -16,7 +16,26 @@
 		$infomsg = $infomsg.$authuser['Username'].$authstage;
 		header('Location: '.$thisRoot.'/error.php?errcode=403&msg='.$infomsg.'&err='.$errmsg);
 	}
-	
+
+function sqlsrvX_execute($queryX,$descriptionX){
+	if( sqlsrv_execute( $queryX))
+	{
+		if( sqlsrv_rows_affected($queryX) > 0)
+		{
+			$GLOBALS["infomsg"] = $GLOBALS["infomsg"].$descriptionX.' successfull (rows affected: '.sqlsrv_rows_affected( $queryX).')<br/>';
+		}
+		else
+		{
+			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made for ".$descriptionX."<br/>";
+		}
+	}
+	else
+	{
+		$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement for ".$descriptionX."<br/>";
+		header('Location: '.$GLOBALS["thisRoot"].'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
+		die( print_r( sqlsrv_errors(), true));
+	}
+}	
 
 function updateParentTag($conn,$ChildID,$ParentID){
 	$querytln="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameterLinks]
@@ -30,26 +49,7 @@ function updateParentTag($conn,$ChildID,$ParentID){
 	}
 	if($ParentID != -1){
 		$addnew = sqlsrv_prepare( $conn, $querytln, array( &$ParentID, &$ChildID));	
-		if( sqlsrv_execute( $addnew))
-		{
-			if( sqlsrv_rows_affected( $addnew) > 0)
-			{
-				//echo "Link updated. (rows affected: ".sqlsrv_rows_affected( $addnew).")\n <br />";
-				$GLOBALS["infomsg"] = $GLOBALS["infomsg"].'Link updated. (rows affected: '.sqlsrv_rows_affected( $addnew).')<br/>';
-			}
-			else
-			{
-				//echo "Link updated. (Statement executed but no rows changed)\n <br />";
-				//$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made to link<br/>";
-			}
-		}
-		else
-		{
-			//echo "Error in executing statement.\n";
-			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (add parent tag"." C>".$ChildID." P>".$ParentID.")<br/>";
-			header('Location: '.$thisRoot.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
-			die( print_r( sqlsrv_errors(), true));
-		}
+		sqlsrvX_execute($addnew,"tag ".$ChildID.", parent addition");
 	}
 }
 
@@ -69,27 +69,7 @@ function deleteTag($imageID,$conn,$tagID){
 		$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."removed any parent links";
 	}
 	$QdeleteTag = sqlsrv_prepare( $conn, $querytd, array( &$tagID));
-	if( sqlsrv_execute( $QdeleteTag ))
-	{
-		if( sqlsrv_rows_affected( $QdeleteTag ) > 0)
-		{
-			//echo "Tag ".$tagID." removed. (rows changed: ".sqlsrv_rows_affected( $QdeleteTag )."\n <br />";
-			$GLOBALS["infomsg"] = $GLOBALS["infomsg"]."Tag ".$tagID." removed. (rows affected: ".sqlsrv_rows_affected( $QdeleteTag ).")<br/>";
-		}
-		else
-		{
-			//echo "Statement executed but no rows changed.\n <br />";
-			//$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
-		}
-		updateParentTag($conn,$tagID,-1);
-	}
-	else
-	{
-		//echo "Error in executing statement (Delete Tag ".$tagID.").\n";
-		$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement (Delete Tag ".$tagID.")<br/>";
-		header('Location: '.$thisRoot.'/edit.php?imgID='.$GLOBALS["imageID"].'&msg='.$GLOBALS["infomsg"].'&err='.$GLOBALS["errmsg"]);
-		die( print_r( sqlsrv_errors(), true));
-	}
+	sqlsrvX_execute($QdeleteTag,"tag ".$tagID." removal");
 }
 
 if($_POST['Save']){
@@ -147,27 +127,7 @@ if($_POST['Save']){
     /*** UPDATE DESCRIPTION ***/
 	//echo "***UPDATE DESCRIPTION***\n<br/>";
     $visitClose = sqlsrv_prepare( $conn, $query, array( &$ud_description, &$imageID));
-    
-    if( sqlsrv_execute( $visitClose))
-    {
-        if( sqlsrv_rows_affected( $visitClose) > 0)
-        {
-            //echo "Description updated. (rows affected:".sqlsrv_rows_affected( $visitClose).")\n <br />";
-            $infomsg = $infomsg.'Description updated. (rows affected: '.sqlsrv_rows_affected( $visitClose).')<br/>';
-        }
-        else
-        {
-            //echo "Statement executed but no rows changed.\n <br />";
-            //$errmsg = $errmsg."No changes made<br/>";
-        }
-    }
-    else
-    {
-        //echo "Error in executing statement.\n";
-	    $errmsg = $errmsg."error in executing statement to change description<br/>";
-        header('Location: '.$thisRoot.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-        die( print_r( sqlsrv_errors(), true));
-    }
+    sqlsrvX_execute($visitClose,"description update");
 
     
     /***UPDATE TAGS***/
@@ -235,26 +195,7 @@ if($_POST['Save']){
 			}
 			updateParentTag($conn,$tag['ID'],$tagnew['parentID']);
 			$updateTag = sqlsrv_prepare( $conn, $querytu, array( &$tagnew['name'], &$tagnew['value'], &$tagnew['position'], &$tag['ID']));
-			if( sqlsrv_execute( $updateTag ))
-				{
-					if( sqlsrv_rows_affected( $updateTag ) > 0)
-					{
-						//echo "Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")\n <br />";
-						//$infomsg = $infomsg."Tag ".$tagnew['value']." updated. (rows affected: ".sqlsrv_rows_affected( $updateTag ).")<br/>";
-					}
-					else
-					{
-						//echo "Statement executed but no rows changed.\n <br />";
-						//$errmsg = $errmsg."No changes made<br/>";
-					}
-				}
-				else
-				{
-					//echo "Error in executing statement (Update Tag Header).\n";
-					$errmsg = $errmsg."error in executing statement (Update Tag Header)<br/>";
-					header('Location: '.$thisRoot.'/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-					die( print_r( sqlsrv_errors(), true));
-				}
+			sqlsrvX_execute($updateTag,"tag ".$tagnew['name'].":".$tagnew['value']." update");
 		}else{
 			//TAG NOT THERE => DELETE
 			//$errmsg = $errmsg."DELETE ".$tag['ID']."<br/>";
@@ -286,7 +227,7 @@ if($_POST['Save']){
     //echo "***COMPLETED SAVE***\n<br/>";
     header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 	
-	
+/*** ADD PARENT DATASET ***/
 }else if($_POST['Link']){
 	$imageID = (int)$_POST["ID"];
 	$parentID = (int)$_POST["OriID"];
@@ -299,35 +240,16 @@ if($_POST['Save']){
     $infomsg = "";
 	
 	
-	/***INSERT NEW TAG***/
+	/***INSERT NEW LINK***/
     if( $parentID != 0){
 		$insertLink = sqlsrv_prepare( $conn, $queryln, array( &$parentID, &$imageID));
-		if( sqlsrv_execute( $insertLink ))
-		{
-			if( sqlsrv_rows_affected( $insertLink ) > 0)
-			{
-				//echo "New Tag inserted. (rows affected: ".sqlsrv_rows_affected( $insertLink ).")\n <br />";
-				$infomsg = $infomsg."Link added. (rows affected: ".sqlsrv_rows_affected( $insertLink ).")<br/>";
-			}
-			else
-			{
-				//echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made<br/>";
-			}
-		}
-		else
-		{
-			//echo "Error in executing statement.\n";
-		    $errmsg = $errmsg."error in executing linking statement<br/>";
-			header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
+		sqlsrvX_execute($insertLink,"link to ".$parentID." addition");
     }
 	
 	
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
-	
+/*** REMOVE PARENT DATASET ***/
 }else if($_POST['Un-Link']){
 	$imageID = (int)$_POST["ID"];
 	$parentID = (int)$_POST['Un-Link'];
@@ -341,46 +263,59 @@ if($_POST['Save']){
 	
 	
 	$deleteLink = sqlsrv_prepare( $conn, $queryld, array( &$parentID, &$imageID));
-	if( sqlsrv_execute( $deleteLink ))
-	{
-		if( sqlsrv_rows_affected( $deleteLink ) > 0)
-		{
-			//echo "Link to ".$parentID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink )."\n <br />";
-			$infomsg = $infomsg."Link to ".$parentID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
-		}
-		else
-		{
-			//echo "Statement executed but no rows changed.\n <br />";
-			$errmsg = $errmsg."No changes made to link<br/>";
-		}
-	}
-	else
-	{
-		//echo "Error in executing statement.\n";
-		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-		die( print_r( sqlsrv_errors(), true));
-	}
+	sqlsrvX_execute($deleteLink,"link to ".$parentID." removal");
 	
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
-	
+/*** IMPORT TAGS FROM PARENT DATASET ***/
 }else if($_POST['Import']){
 	$imageID = (int)$_POST["ID"];
 	$parentID = (int)$_POST['Import'];
-	
-	$queryli="SELECT [Name],[Value],[Unit],[Type]
-  FROM [MEDDATADB].[dbo].[ExperimentParameters]
-  WHERE [ExperimentID] = ?
-  AND NOT [Name] = ANY (
+
+    //select tags and their parent key
+    $queryli="SELECT 
+	Tags.[ID], 
+	Tags.[Name],
+	Tags.[Value],
+	Tags.[Unit],
+	Tags.[Type],
+	Parent.[Name] AS ParentName
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS Tags
+  LEFT JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS Link ON Tags.[ID] = Link.[LinkedParameterID]
+  LEFT JOIN [MEDDATADB].[dbo].[ExperimentParameters] AS Parent ON Link.[ParentParameterID] = Parent.[ID]
+  WHERE Tags.[ExperimentID] = ?
+  AND NOT Tags.[Name] = ANY (
     SELECT [Name]
     FROM [MEDDATADB].[dbo].[ExperimentParameters]
     WHERE [ExperimentID] = ? )
-  ORDER BY [Position]";
+  ORDER BY Tags.[Position]";
+  
+  //get parent tag ID for experiment
+    $queryPT="SELECT [ID], [Position]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters]
+  WHERE [ExperimentID] = ?
+  AND [Name] = ?";
+  
+  //get new position number
+   $queryCT="SELECT 
+	COUNT(Tags.[ID]) AS Count
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS Tags
+  WHERE Tags.[ExperimentID] = ?
+  GROUP BY Tags.[ExperimentID]";
 	
 	$queryta="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameters]
       ( [ExperimentID], [Name], [Value] ,[Unit], [Type] )   
-      VALUES (?, ?, ?, ?, ?)";
+      VALUES (?, ?, ?, ?, ?); SELECT @@IDENTITY AS ID;";
+	
+	//add tag link
+	$queryTLA="INSERT INTO [MEDDATADB].[dbo].[ExperimentParameterLinks]
+      ( [ParentParameterID], [LinkedParameterID] )   
+      VALUES (?, ?)";
+	  
+	//update position
+	$queryTUP="UPDATE [MEDDATADB].[dbo].[ExperimentParameters]
+      SET [Position] = ?  
+      WHERE [ID] = ?";
 	  
 	//$options = array( "Scrollable" => SQLSRV_CURSOR_KEYSET );
 	
@@ -388,6 +323,12 @@ if($_POST['Save']){
     $infomsg = "";
 	
 	$newtags = sqlsrv_query( $conn, $queryli, array( &$parentID, &$imageID));
+	$tempCT = sqlsrv_query( $conn, $queryCT, array( &$imageID));
+	$tempQR = sqlsrv_fetch_array($tempCT);
+	$posCntr = $tempQR['Count'];
+	if($posCntr === NULL){
+		$posCntr = 0;
+	}
 	
 	while($tag = sqlsrv_fetch_array($newtags)) {
 		$addTag = sqlsrv_prepare( $conn, $queryta, array( &$imageID, &$tag['Name'], &$tag['Value'], &$tag['Unit'], &$tag['Type']),$options);
@@ -397,6 +338,34 @@ if($_POST['Save']){
 			{
 				//echo "Tag from ".$parentID." added.\n <br />".sqlsrv_rows_affected( $addTag );
 				$infomsg = $infomsg."Tag from ".$parentID." added. (rows affected: ".sqlsrv_rows_affected( $addTag ).")<br/>";
+				
+				$next_result = sqlsrv_next_result($addTag); 
+				$child = sqlsrv_fetch_array($addTag);
+				
+				if($tag['ParentName'] != null){
+					$parents = sqlsrv_query( $conn, $queryPT, array( &$imageID, $tag['ParentName']));
+					$parent = sqlsrv_fetch_array($parents);
+					
+					
+					$addTagLink = sqlsrv_prepare( $conn, $queryTLA, array( &$parent['ID'], &$child['ID']),$options);
+					$newpos = $parent['Position'] + 1;
+					$updateTagPosition = sqlsrv_prepare( $conn, $queryTUP, array( &$newpos, &$child['ID']),$options);
+					if( sqlsrv_execute( $addTagLink ))
+					{
+						sqlsrv_execute( $updateTagPosition );
+						$infomsg = $infomsg."Tag successfully linked. (rows affected: ".sqlsrv_rows_affected( $addTagLink ).")<br/>";
+					}else{
+						$errmsg = $errmsg."error in executing tag importing statement when linking ".$parent['ID']." and ".$child['ID']."<br/>";
+						header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
+						die( print_r( sqlsrv_errors(), true));
+					}
+				}else{
+					$newpos = $posCntr;
+					$updateTagPosition = sqlsrv_prepare( $conn, $queryTUP, array( &$newpos, &$child['ID']),$options);
+					sqlsrv_execute( $updateTagPosition );
+				}
+				$posCntr += 1;
+				
 			}
 			else
 			{
@@ -415,7 +384,7 @@ if($_POST['Save']){
 	
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
-	
+/*** ADD USER ACCESS ***/	
 }else if($_POST['UsrAdd']){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
@@ -440,32 +409,13 @@ if($_POST['Save']){
 	/***INSERT NEW USER***/
     if( $userID !== ""){
 		$insertUser= sqlsrv_prepare( $conn, $queryau, array( &$imageID, &$userID, &$userPermission));
-		if( sqlsrv_execute( $insertUser ))
-		{
-			if( sqlsrv_rows_affected( $insertUser ) > 0)
-			{
-				//echo "Statement executed.\n <br />".sqlsrv_rows_affected( $insertUser );
-				$infomsg = $infomsg."User added. (rows affected: ".sqlsrv_rows_affected( $insertUser ).")<br/>";
-			}
-			else
-			{
-				//echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made<br/>";
-			}
-		}
-		else
-		{
-			//echo "Error in executing statement.\n";
-		    $errmsg = $errmsg."error in adding user statement<br/>";
-			header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
+		sqlsrvX_execute($insertUser,"user ".$userID." addition");
     }
 	
 	
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
-	
+/*** REMOVE USER ACCESS ***/	
 }else if(isset($_POST['UsrDel']) && $_POST['UsrDel'] !== ""){
 	if($authstage != "Writer"  && $authuser['Username'] != "Administrator"){
 		$errmsg = $errmsg."Access Denied!";
@@ -483,31 +433,12 @@ if($_POST['Save']){
     $infomsg = "";
 	
 	
-	$deleteLink = sqlsrv_prepare( $conn, $queryud, array( &$userID, &$imageID));
-	if( sqlsrv_execute( $deleteLink ))
-	{
-		if( sqlsrv_rows_affected( $deleteLink ) > 0)
-		{
-			//echo "Link to ".$userID." removed.\n <br />".sqlsrv_rows_affected( $deleteLink );
-			$infomsg = $infomsg."Link to ".$userID." removed. (rows affected: ".sqlsrv_rows_affected( $deleteLink ).")<br/>";
-		}
-		else
-		{
-			//echo "Statement executed but no rows changed.\n <br />";
-			$errmsg = $errmsg."No changes made to link<br/>";
-		}
-	}
-	else
-	{
-		//echo "Error in executing statement.\n";
-		$errmsg = $errmsg."error in executing un-linking statement<br/>";
-		header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-		die( print_r( sqlsrv_errors(), true));
-	}
+	$deleteUser = sqlsrv_prepare( $conn, $queryud, array( &$userID, &$imageID));
+	sqlsrvX_execute($deleteUser,"user removal");
 	
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 
-	
+/*** OTHER REQUEST ***/	
 }else{
 	$errmsg = "something went wrong";
 	header('Location: '.$thisRoot.'/edit.php?imgID='.$imageID.'msg='.$infomsg.'&err='.$errmsg);

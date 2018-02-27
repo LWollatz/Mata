@@ -53,7 +53,7 @@ $tagvalue = htmlspecialchars($tagvalue,ENT_QUOTES);
 
 <head>
 	<!--metadata-->
-	<?php $PageTitle = "Tag ".$tagvalue." | MEDDATA"; ?>
+	<?php $PageTitle = "Tag ".$tagvalue." | MATA"; ?>
 	<?php include "_LayoutMetadata.php"; ?> 
 	<!--style-->
 	<?php include "_LayoutStyles.php"; ?> 

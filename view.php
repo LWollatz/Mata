@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html style="height: 100%;">
 <?php
-/*<!--php-->*/
 include "_LayoutDatabase.php";
 $errmsg = "";
 /* get variables */
 $imageID = (int)$_GET['imgID'];
 
-
+/* check authorization */
 include "_SecurityCheck.php";
 if($authstage == "None"){
 	$ErrorMsg = $ErrorMsg."You must be logged in to view datasets";
 	header($_SERVER["SERVER_PROTOCOL"]." 401 Unauthorized");
 	header("Location: /error.php?errcode=401");
 }
-/*if($authstage == "Basic"){
+if($authstage == "Basic"){
 	$ErrorMsg = $ErrorMsg."You do not have permission to view this dataset";
 	header("HTTP/1.1 403 Forbidden");
-}*/
+}
 
 
 
@@ -61,7 +60,6 @@ $tsql = "SELECT
   [ExperimentParameters].[Position], 
   [LinkC].[ParentParameterID]
   ORDER BY [ExperimentParameters].[Position]";
-//$tsql = str_replace("@1", $imageID, $tsql);
 
 $fsql = "SELECT *
   FROM [MEDDATADB].[dbo].[ExperimentDataFiles]
@@ -86,7 +84,7 @@ $ecsql = "SELECT [ParentExperimentID]
   WHERE [ParentExperimentID] = ?";
 
 
-
+/* run sql queries */
 $srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
 $srtags = sqlsrv_query( $conn, $tsql, array(&$imageID)); 
 $srfiles = sqlsrv_query( $conn, $fsql, array(&$imageID));
@@ -133,7 +131,7 @@ if(file_exists($filpath."/.previews/infoSTL.txt")){
 ?>
 <head>
 	<!--metadata-->
-	<?php $PageTitle = $row['Name']." | MEDDATA"; ?>
+	<?php $PageTitle = $row['Name']." | MATA"; ?>
 	<?php $PageKeywords = ", multi-resolution, tile-based 3D CT image viewer"; ?>
 	<?php include "_LayoutMetadata.php"; ?> 
 	<!--style-->
@@ -162,7 +160,6 @@ include "_LayoutHeader.php";
 	<div id="basicinfo" style="margin-left:25px;">
 		<b>Name:</b> <?php echo $row['Name'];?><br/>
 		<b>Date:</b> <?php echo $row['Date']->format("d/m/Y H:i:s");?><br/>
-		<b>Your Access:</b> <?php echo $authstage;?><br/>
 		<!--
 		<b>Path:</b> <?php echo $relpath;?><br/>
 		<b>Contains 3D Stack?:</b> <a href="<?php echo $relpath.'/.previews/infoJSON.txt';?>">boolean <?php if($hasPreview){echo "true";}else{echo "false";}?></a><br/>
@@ -170,6 +167,7 @@ include "_LayoutHeader.php";
 		-->
 		<b>Description:</b> <i><?php echo $row['Description'];?></i><br/>
 		<b><i class="fa fa-user-md"></i>   Owner:</b> <?php echo $owner['Name']; ?><br/>
+		<b>Your Access:</b> <?php echo $authstage;?><br/>
 		<?php //echo " - you are ".$authstage."<br/>"; ?>
 	</div>
 	<div id="tagtree">

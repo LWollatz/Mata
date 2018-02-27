@@ -141,7 +141,7 @@ if($row["ExperimentTypeID"] != 0){
 ?>
 <head>
 	<!--metadata-->
-	<?php $PageTitle = "Network for ".$row['Name']." | MEDDATA"; ?>
+	<?php $PageTitle = "Network for ".$row['Name']." | MATA"; ?>
 	<?php $PageKeywords = ", network graph"; ?>
 	<?php include "_LayoutMetadata.php"; ?> 
 	<!--style-->
@@ -319,6 +319,7 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				font: {
 					multi: 'html',
 					strokeWidth: 2,
+					size: 18,
 					background: '#ffffff'
 				},
 				widthConstraint: {
@@ -342,6 +343,7 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				},
 				font: {
 					multi: 'html',
+					size: 16,
 					strokeWidth: 2
 				},
 				icon: {
@@ -361,6 +363,7 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				},
 				font: {
 					multi: 'html',
+					size: 18,
 					strokeWidth: 2
 				},
 				widthConstraint: {
@@ -383,6 +386,7 @@ for($i = 0; $i < sizeof($edgesT); $i++){
 				},
 				font: {
 					multi: 'html',
+					size: 18,
 					strokeWidth: 2
 				},
 				widthConstraint: {

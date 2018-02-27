@@ -36,6 +36,34 @@ $tsql = "SELECT
   WHERE [ExperimentParameters].[ExperimentID] = ?
   ORDER BY [ExperimentParameters].[Position]";
 /*$tsql = str_replace("@1", $imageID, $tsql);*/
+/*$tsql = "SELECT * FROM
+(SELECT 
+	Tags.[ID], 
+	Tags.[Name],
+	Tags.[Value],
+	Tags.[Unit],
+	Tags.[Type],
+	Tags.[Position],
+	Link.[ParentParameterID]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS Tags
+  LEFT JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS Link ON Tags.[ID] = Link.[LinkedParameterID]
+  WHERE Tags.[ExperimentID] = ?
+  AND NOT Link.[ParentParameterID] IS NULL
+UNION
+SELECT 
+	Tags.[ID], 
+	Tags.[Name],
+	Tags.[Value],
+	Tags.[Unit],
+	Tags.[Type],
+	Tags.[Position],
+	Link.[ParentParameterID]
+  FROM [MEDDATADB].[dbo].[ExperimentParameters] AS Tags
+  LEFT JOIN [MEDDATADB].[dbo].[ExperimentParameterLinks] AS Link ON Tags.[ID] = Link.[LinkedParameterID]
+  WHERE Tags.[ExperimentID] = ?
+  AND Link.[ParentParameterID] IS NULL)
+AS Tag
+ORDER BY Tag.Position, Tag.ParentParameterID, Tag.ID";*/
 
 $tusql = "SELECT DISTINCT [Name]
   FROM [MEDDATADB].[dbo].[ExperimentParameters]
@@ -79,7 +107,7 @@ $elsql = "SELECT [ParentExperimentID]
 	
 
 $srinfo = sqlsrv_query( $conn, $isql, array(&$imageID));
-$srtags = sqlsrv_query( $conn, $tsql, array(&$imageID)); /*there must be a more efficient way, but how do I duplicate the result of a query?*/
+$srtags = sqlsrv_query( $conn, $tsql, array(&$imageID,&$imageID)); /*there must be a more efficient way, but how do I duplicate the result of a query?*/
 $srtagsPre = sqlsrv_query( $conn, $tusql, array(&$imageID));
 $tagkeys = sqlsrv_query( $conn, $tnsql, array(&$imageID));
 $tagvalues = sqlsrv_query( $conn, $tvasql);  
@@ -110,7 +138,7 @@ $relpath = str_replace("\\", "/", $relpath);
 ?>
 <head>
 <!--metadata-->
-<?php $PageTitle = "Edit ".$row['Name']." | MEDDATA"; ?>
+<?php $PageTitle = "Edit ".$row['Name']." | MATA"; ?>
 <?php $PageKeywords = ", multi-resolution, tile-based 3D CT image viewer"; ?>
 <?php include "_LayoutMetadata.php"; ?> 
 <!--style-->
