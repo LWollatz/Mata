@@ -66,7 +66,8 @@ $tsql = "SELECT
 //describes the tag as key and value plus its children returns first nodeID inserted with this
 $tagtypes = array(); //list of all ids => corresponding descriptor
 $tagdescriptors = array(); //list of all descriptors
-function gettagdescriptor($tagX){
+
+function createtagdescriptor($tagX){
 	$tcsql = "SELECT
   [ExperimentParameters].[ID]
 , [ExperimentParameters].[Name]
@@ -78,33 +79,37 @@ function gettagdescriptor($tagX){
   ON [LinkP].[LinkedParameterID] = [ExperimentParameters].[ID]
   WHERE [LinkP].[ParentParameterID] = ?
   ORDER BY [ExperimentParameters].[Name], [ExperimentParameters].[Value]";
+	$tagtype = "T;".htmlspecialchars($tagX["Name"]).";".htmlspecialchars($tagX["Value"]).";[";
+	$ctags = sqlsrv_query( $GLOBALS["conn"], $tcsql, array(&$tagX["ID"]));
+	while($childX = sqlsrv_fetch_array($ctags)) {
+		$temp = "{";
+		//if(array_key_exists($childX['ID'],$GLOBALS["tagtypes"])){
+		//	//saved already -> just copy
+		//	$temp = $temp.$GLOBALS["tagtypes"][$childX['ID']];
+		//}else{
+		//	//not saved -> need to create*/
+			$temp = $temp.gettagdescriptor($childX);
+		//}
+		$temp = $temp."}";
+		$tagtype = $tagtype.$temp;
+	}
+	$tagtype = rtrim($tagtype,";");
+	$tagtype = $tagtype."]";
+	//save it for future use
+	$GLOBALS["tagtypes"][$tagX["ID"]] = $tagtype;
+	if(array_key_exists($tagtype,$GLOBALS["tagdescriptors"])){
+		array_push($GLOBALS["tagdescriptors"],$tagtype);
+	}
+	return $tagtype;
+}
+
+function gettagdescriptor($tagX){
 	if(array_key_exists($tagX['ID'],$GLOBALS["tagtypes"])){
 		//saved already -> just copy
 		return $GLOBALS["tagtypes"][$tagX['ID']];
 	}else{
 		//not saved -> need to create
-		$tagtype = "T;".htmlspecialchars($tagX["Name"]).";".htmlspecialchars($tagX["Value"]).";[";
-		$ctags = sqlsrv_query( $GLOBALS["conn"], $tcsql, array(&$tagX["ID"]));
-		while($childX = sqlsrv_fetch_array($ctags)) {
-			$temp = "{";
-			/*if(array_key_exists($childX['ID'],$GLOBALS["tagtypes"])){
-				//saved already -> just copy
-				$temp = $temp.$GLOBALS["tagtypes"][$childX['ID']];
-			}else{
-				//not saved -> need to create*/
-				$temp = $temp.gettagdescriptor($childX);
-			/*}*/
-			$temp = $temp."}";
-			$tagtype = $tagtype.$temp;
-		}
-		$tagtype = rtrim($tagtype,";");
-		$tagtype = $tagtype."]";
-		//save it for future use
-		$GLOBALS["tagtypes"][$tagX["ID"]] = $tagtype;
-		if(array_key_exists($tagtype,$GLOBALS["tagdescriptors"])){
-			array_push($GLOBALS["tagdescriptors"],$tagtype);
-		}
-		return $tagtype;
+		return createtagdescriptor($tagX);
 	}
 	return $tagtype;
 }

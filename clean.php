@@ -25,78 +25,44 @@
 
     $errmsg = "";
     $infomsg = "";
+	
+	function deleteEntries($query,$querystr,$description){
+		//$query = sqlsrv_prepare( $conn, $querystr);
+		if( sqlsrv_execute( $query))
+		{
+			if( sqlsrv_rows_affected( $query) > 0)
+			{
+				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $query);
+				$GLOBALS["infomsg"] = $GLOBALS["infomsg"].'Deleted '.$description.' removed. (rows affected: '.sqlsrv_rows_affected( $query).')<br/>';
+			}
+			else
+			{
+				echo "Statement executed but no rows changed.\n <br />";
+				$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."No changes made<br/>";
+			}
+		}
+		else
+		{
+			echo "Error in executing statement $querystr.\n";
+			$GLOBALS["errmsg"] = $GLOBALS["errmsg"]."error in executing statement $querystr<br/>";
+			header('Location: http://meddata.clients.soton.ac.uk/index.php?msg='.$infomsg.'&err='.$GLOBALS["errmsg"]);
+			die( print_r( sqlsrv_errors(), true));
+		}
+	}
     
 
     /*** UPDATE ***/
 	if($imageID == 0){
-		$deleteExp = sqlsrv_prepare( $conn, $queryde);
-		if( sqlsrv_execute( $deleteExp))
-		{
-			if( sqlsrv_rows_affected( $deleteExp) > 0)
-			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $deleteExp);
-				$infomsg = $infomsg.'Deleted Experiments removed. (rows affected: '.sqlsrv_rows_affected( $deleteExp).')<br/>';
-			}
-			else
-			{
-				echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made<br/>";
-			}
-		}
-		else
-		{
-			echo "Error in executing statement $queryde.\n";
-			$errmsg = $errmsg."error in executing statement queryde<br/>";
-			header('Location: http://meddata.clients.soton.ac.uk/index.php?msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
-		
-		$deletePar = sqlsrv_prepare( $conn, $querydpA, array());
-		if( sqlsrv_execute( $deletePar))
-		{
-			if( sqlsrv_rows_affected( $deletePar) > 0)
-			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $deletePar);
-				$infomsg = $infomsg.'Deleted Files removed. (rows affected: '.sqlsrv_rows_affected( $deletePar).')<br/>';
-			}
-			else
-			{
-				echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made<br/>";
-			}
-		}
-		else
-		{
-			echo "Error in executing statement $querydpA.\n";
-			$errmsg = $errmsg."error in executing statement querydpA<br/>";
-			header('Location: http://meddata.clients.soton.ac.uk/index.php?msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
+		$queryE = sqlsrv_prepare( $conn, $queryde);
+		deleteEntries($queryE,$queryde,"Experiments");
+		$queryF = sqlsrv_prepare( $conn, $querydpA);
+		deleteEntries($queryF,$querydpA,"Files");
 		header('Location: http://meddata.clients.soton.ac.uk/index.php?msg='.$infomsg.'&err='.$errmsg);
 	}
 	else
 	{
 		$deletePar = sqlsrv_prepare( $conn, $querydpI, array( &$imageID));
-		if( sqlsrv_execute( $deletePar))
-		{
-			if( sqlsrv_rows_affected( $deletePar) > 0)
-			{
-				echo "Statement executed.\n <br />".sqlsrv_rows_affected( $deletePar);
-				$infomsg = $infomsg.'Deleted Files for this Experiment removed. (rows affected: '.sqlsrv_rows_affected( $deletePar).')<br/>';
-			}
-			else
-			{
-				echo "Statement executed but no rows changed.\n <br />";
-				$errmsg = $errmsg."No changes made by querydpI<br/>";
-			}
-		}
-		else
-		{
-			echo "Error in executing statement $querydpI.\n";
-			$errmsg = $errmsg."error in executing statement querydpI<br/>";
-			header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
-			die( print_r( sqlsrv_errors(), true));
-		}
+		deleteEntries($deletePar,$querydpI,"Files for this Experiment");
 		header('Location: http://meddata.clients.soton.ac.uk/view.php?imgID='.$imageID.'&msg='.$infomsg.'&err='.$errmsg);
 	}
 
